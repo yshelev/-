@@ -153,7 +153,8 @@ class Shot(pygame.sprite.Sprite):
         self.speed_x = -cos(angle) * speed
         self.speed_y = -sin(angle) * speed
         self.rect = pygame.Rect(int(self.x_y[0]), int(self.x_y[1]), 20, 20)
-        self.image, self.rect = rot_center(self.image, self.rect, -angle * 57 + 90)
+        self.image, self.rect = rot_center(self.image, self.rect, -angle * 57 + 87)
+        self.rect = self.rect.move(self.speed_x * 2, self.speed_y * 2)
         all_sprite.add(self)
 
     def update(self, x, y, event_type):
@@ -185,7 +186,7 @@ while running:
         if event.type == pygame.MOUSEBUTTONDOWN:
             x, y = event.pos
             if not flag_shot:
-                shot = Shot([our_tank[1].rect.x, our_tank[1].rect.y], [x, y])
+                shot = Shot([our_tank[0].rect.x + 15, our_tank[0].rect.y + 20], [x, y])
                 flag = 1
                 flag_gun = 1
                 flag_shot = 1
