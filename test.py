@@ -138,7 +138,7 @@ class Shot(pygame.sprite.Sprite):
         super().__init__(all_sprite)
         self.image = self.image = pygame.image.load('data/пуля.jpg')
         self.image = pygame.transform.scale(self.image
-                                                      , (20, 20))
+                                                      , (15, 15))
         self.image.set_colorkey(self.image.get_at((0, 0)))
         coord = list(coord)
         self.x_y = list((coord[0] + 15, coord[1]))
@@ -153,6 +153,7 @@ class Shot(pygame.sprite.Sprite):
         self.speed_x = -cos(angle) * speed
         self.speed_y = -sin(angle) * speed
         self.rect = pygame.Rect(int(self.x_y[0]), int(self.x_y[1]), 20, 20)
+        self.image, self.rect = rot_center(self.image, self.rect, -angle * 57 + 90)
         all_sprite.add(self)
 
     def update(self, x, y, event_type):
@@ -173,7 +174,9 @@ our_tank = (Tank_gus(start_pos_x, start_pos_y), Tank_gun(start_pos_x + 12, start
 
 start_screen()
 flag = 0
-flag_1 = 0
+flag_gun = 0
+flag_shot = 0
+count = 0
 
 while running:
     for event in pygame.event.get():
@@ -181,15 +184,25 @@ while running:
             running = False
         if event.type == pygame.MOUSEBUTTONDOWN:
             x, y = event.pos
-            shot = Shot([our_tank[1].rect.x, our_tank[1].rect.y], [x, y])
-            flag = 1
-            flag_1 = 1
+            if not flag_shot:
+                shot = Shot([our_tank[1].rect.x, our_tank[1].rect.y], [x, y])
+                flag = 1
+                flag_gun = 1
+                flag_shot = 1
+
+    if flag_shot:
+        if count == 10:
+            flag_shot = 0
+            count = 0
+        else:
+            count += 1
+
 
     if flag:
         all_sprite.update(x, y, 1)
-    if flag_1:
+    if flag_gun:
         all_sprite.update(x, y, 2)
-        flag_1 = 0
+        flag_gun = 0
     keys = pygame.key.get_pressed()
     if keys[pygame.K_w]:
         all_sprite.update(0, -1, 0)
@@ -203,5 +216,5 @@ while running:
     all_sprite.draw(screen)
     clock.tick(10)
     pygame.display.flip()
+
 pygame.quit()
-print()
