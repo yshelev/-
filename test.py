@@ -57,6 +57,17 @@ def start_screen():
         pygame.display.flip()
         clock.tick(FPS)
 
+
+class Block_of_wall:
+    def __init__(self, x, y):
+        self.left = y
+        self.top = x
+        self.cell_size = 10
+
+    def render(self, screeen):
+        pygame.draw.rect(screeen, (0, 0, 0), (self.left, self.top, self.cell_size, self.cell_size))
+
+
 class Tank_gus(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__(all_sprite)
@@ -172,7 +183,14 @@ running = True
 start_pos_x, start_pos_y = 500, 500
 
 our_tank = (Tank_gus(start_pos_x, start_pos_y), Tank_gun(start_pos_x + 12, start_pos_y - 15, 0))
-
+vs_tank
+all_walls = [[Block_of_wall(i * 10, 0) for i in range(80)],
+             [Block_of_wall(0, i * 10) for i in range(100)],
+             [Block_of_wall(i * 10, WIDTH - 10) for i in range(80)],
+             [Block_of_wall(HEIGHT - 10, i * 10) for i in range(100)]]
+for spisok in all_walls:
+    for block in spisok:
+        block.render(screen)
 start_screen()
 flag = 0
 flag_gun = 0
@@ -214,6 +232,9 @@ while running:
     elif keys[pygame.K_d]:
         all_sprite.update(1, 0, 0)
     screen.fill((255, 255, 255))
+    for spisok in all_walls:
+        for block in spisok:
+            block.render(screen)
     all_sprite.draw(screen)
     clock.tick(10)
     pygame.display.flip()
