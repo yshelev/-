@@ -145,14 +145,15 @@ class Tank_gun(pygame.sprite.Sprite):
             self.image, self.rect = rot_center(self.image_start_gun, self.rect, -angle * 57 + 90)
 
 class Shot(pygame.sprite.Sprite):
-    def __init__(self, coord, target):
+    def __init__(self, coord, target, type):
         super().__init__(all_sprite)
         self.image = self.image = pygame.image.load('data/пуля.jpg')
         self.image = pygame.transform.scale(self.image
                                                       , (15, 15))
         self.image.set_colorkey(self.image.get_at((0, 0)))
+        self.type = type
         coord = list(coord)
-        self.x_y = list((coord[0] + 15, coord[1]))
+        self.x_y = list((coord[0], coord[1]))
         delta_x = coord[0] - target[0]
         delta_y = coord[1] - target[1]
         long = (delta_x ** 2 + delta_y ** 2) ** 0.5
@@ -163,14 +164,28 @@ class Shot(pygame.sprite.Sprite):
         speed = 20
         self.speed_x = -cos(angle) * speed
         self.speed_y = -sin(angle) * speed
+        self.angle = -angle * 57 + 90
         self.rect = pygame.Rect(int(self.x_y[0]), int(self.x_y[1]), 20, 20)
-        self.image, self.rect = rot_center(self.image, self.rect, -angle * 57 + 87)
-        self.rect = self.rect.move(self.speed_x * 2, self.speed_y * 2)
+        self.image, self.rect = rot_center(self.image, self.rect, self.angle)
+        self.rect = self.rect.move(self.speed_x * 2.5, self.speed_y * 2.5)
         all_sprite.add(self)
 
     def update(self, x, y, event_type):
         if event_type == 1:
             self.rect = self.rect.move(self.speed_x, self.speed_y)
+        if event_type == 3:
+            if count_otskok <= 2:
+                if 0 <= self.angle <= 90:
+                    self.angle += 90
+                elif 90 <= self.angle <= 180:
+                    self.image, self.rect = rot_center(self.image, self.rect, -self.angle * 57 + 90)
+                elif 0 <= -self.angle * 57 + 90 <= 90:
+                    self.angle += 90
+                elif 0 <= -self.angle * 57 + 90 <= 90:
+                    self.angle += 90
+                self.image, self.rect = rot_center(self.image, self.rect, -self.angle * 57 + 90)
+            else:
+                all_sprite.remove(self)
 
 pygame.display.set_caption('Pull up on the tank, и я еду в бой')
 WIDTH, HEIGHT = 1000, 800
@@ -183,7 +198,6 @@ running = True
 start_pos_x, start_pos_y = 500, 500
 
 our_tank = (Tank_gus(start_pos_x, start_pos_y), Tank_gun(start_pos_x + 12, start_pos_y - 15, 0))
-vs_tank
 all_walls = [[Block_of_wall(i * 10, 0) for i in range(80)],
              [Block_of_wall(0, i * 10) for i in range(100)],
              [Block_of_wall(i * 10, WIDTH - 10) for i in range(80)],
@@ -195,7 +209,7 @@ start_screen()
 flag = 0
 flag_gun = 0
 flag_shot = 0
-count = 0
+count_shot = 0
 
 while running:
     for event in pygame.event.get():
@@ -204,17 +218,17 @@ while running:
         if event.type == pygame.MOUSEBUTTONDOWN:
             x, y = event.pos
             if not flag_shot:
-                shot = Shot([our_tank[0].rect.x + 15, our_tank[0].rect.y + 20], [x, y])
+                shot = Shot([our_tank[0].rect.x + 25, our_tank[0].rect.y + 25], [x, y])
                 flag = 1
                 flag_gun = 1
                 flag_shot = 1
 
     if flag_shot:
-        if count == 10:
+        if count_shot == 5:
             flag_shot = 0
-            count = 0
+            count_shot = 0
         else:
-            count += 1
+            count_shot += 1
 
 
     if flag:
