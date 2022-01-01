@@ -1,256 +1,66 @@
-import random, pygame, sys
-from math import cos, acos, sin
+import pygame
+import random
 
 pygame.init()
+width, height = 800, 800
+screen = pygame.display.set_mode((width, height))
+all_sprites = pygame.sprite.Group()
+horizontal_borders = pygame.sprite.Group()
+vertical_borders = pygame.sprite.Group()
 
-FPS = 50
+class Ball(pygame.sprite.Sprite):
+    def __init__(self, radius, x, y):
+        super().__init__(all_sprites)
+        self.radius = radius
+        self.image = pygame.Surface((2 * radius, 2 * radius),
+                                    pygame.SRCALPHA, 32)
+        pygame.draw.circle(self.image, pygame.Color("red"),
+                           (radius, radius), radius)
+        self.rect = pygame.Rect(x, y, 2 * radius, 2 * radius)
+        self.vx = random.randint(-5, 5)
+        self.vy = random.randrange(-5, 5)
 
-
-def blitRotate(surf, image, pos, originPos, angle):
-    w, h       = image.get_size()
-    box        = [pygame.math.Vector2(p) for p in [(0, 0), (w, 0), (w, -h), (0, -h)]]
-    box_rotate = [p.rotate(angle) for p in box]
-    min_box    = (min(box_rotate, key=lambda p: p[0])[0], min(box_rotate, key=lambda p: p[1])[1])
-    max_box    = (max(box_rotate, key=lambda p: p[0])[0], max(box_rotate, key=lambda p: p[1])[1])
-    origin = (pos[0] + min_box[0], pos[1] - max_box[1])
-
-    rotated_image = pygame.transform.rotate(image, angle)
-    return rotated_image
-
-def rot_center(image, rect, angle):
-    rot_image = pygame.transform.rotate(image, angle)
-    x, y = rect.center
-    rot_rect = rot_image.get_rect(center=(x, y))
-    return rot_image, rot_rect
-
-def terminate():
-    pygame.quit()
-    sys.exit()
-
-def start_screen():
-    intro_text = ["ЗАСТАВКА", "",
-                  "Правила игры",
-                  "Если вы не будете уважать пуджа,",
-                  "он вам накидает"]
-
-    fon = pygame.image.load('data/fon.jpg')
-    fon1 = pygame.transform.scale(fon, (WIDTH, HEIGHT))
-    screen.blit(fon1, (0, 0))
-    font = pygame.font.Font(None, 30)
-    text_coord = 50
-    for line in intro_text:
-        string_rendered = font.render(line, 1, pygame.Color('black'))
-        intro_rect = string_rendered.get_rect()
-        text_coord += 10
-        intro_rect.top = text_coord
-        intro_rect.x = 10
-        text_coord += intro_rect.height
-        screen.blit(string_rendered, intro_rect)
-
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                terminate()
-            elif event.type == pygame.KEYDOWN or \
-                    event.type == pygame.MOUSEBUTTONDOWN:
-                return  # начинаем игру
-        pygame.display.flip()
-        clock.tick(FPS)
+    def update(self):
+        self.rect = self.rect.move(self.vx, self.vy)
+        if pygame.sprite.spritecollideany(self, horizontal_borders):
+            self.vy = -self.vy
+        if pygame.sprite.spritecollideany(self, vertical_borders):
+            self.vx = -self.vx
 
 
-class Block_of_wall:
-    def __init__(self, x, y):
-        self.left = y
-        self.top = x
-        self.cell_size = 10
-
-    def render(self, screeen):
-        pygame.draw.rect(screeen, (0, 0, 0), (self.left, self.top, self.cell_size, self.cell_size))
-
-
-class Tank_gus(pygame.sprite.Sprite):
-    def __init__(self, x, y):
-        super().__init__(all_sprite)
-        self.image = pygame.image.load('data/tank_gus.jpg')
-        self.image_start_gus = pygame.image.load('data/tank_gus.jpg')
-        self.image_start_gus = pygame.transform.scale(self.image_start_gus
-                                                  , (75, 75))
-        self.image = pygame.transform.scale(self.image, (75, 75))
-
-        colorkey = self.image.get_at((0, 0))
-        self.image.set_colorkey(colorkey)
-        self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
-        all_sprite.add(self)
-
-    def update(self, x, y, event_type):
-        if event_type == 0:
-            self.move(x, y)
-            self.rotate(x, y)
-
-    def move(self, x, y):
-        speed = 10
-        self.rect = self.rect.move(x * speed, y * speed)
+class Border(pygame.sprite.Sprite):
+    # строго вертикальный или строго горизонтальный отрезок
+    def __init__(self, x1, y1, x2, y2):
+        super().__init__(all_sprites)
+        if x1 == x2:  # вертикальная стенка
+            self.add(vertical_borders)
+            self.image = pygame.Surface([1, y2 - y1])
+            self.rect = pygame.Rect(x1, y1, 1, y2 - y1)
+        else:  # горизонтальная стенка
+            self.add(horizontal_borders)
+            self.image = pygame.Surface([x2 - x1, 1])
+            self.rect = pygame.Rect(x1, y1, x2 - x1, 1)
 
 
-    def rotate(self, x, y):
-        pos = (screen.get_width() / 2, screen.get_height() / 2)
-        pos = (200, 200)
-        w, h = self.image.get_size()
-        if x == 0:
-            if y == -1:
-                self.image = blitRotate(screen, self.image_start_gus, pos, (w/2, h/2), 180)
-            elif y == 1:
-                self.image = blitRotate(screen, self.image_start_gus, pos, (w/2, h/2), 0)
-        elif x == 1:
-            if y == 0:
-                self.image = blitRotate(screen, self.image_start_gus, pos, (w/2, h/2), 90)
-        else:
-            self.image = blitRotate(screen, self.image_start_gus, pos, (w/2, h/2), 270)
-
-    def retx_y(self):
-        return self.rect.x, self.rect.y
-
-class Tank_gun(pygame.sprite.Sprite):
-    def __init__(self, x, y, weapon_type):
-        super().__init__(all_sprite)
-        self.image = pygame.image.load('data/new_tank_gun.jpg')
-        self.image_start_gun = pygame.image.load('data/new_tank_gun.jpg')
-        self.image_start_gun = pygame.transform.scale(self.image_start_gun
-                                                      , (50, 100))
-        self.image = pygame.transform.scale(self.image, (50, 100))
-        self.image.set_colorkey(self.image.get_at((0, 0)))
-        self.image_start_gun.set_colorkey(self.image.get_at((0, 0)))
-        self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
-        all_sprite.add(self)
-
-    def update(self, x, y, event_type):
-        if event_type == 0:
-            speed = 10
-            self.rect = self.rect.move(x * speed, y * speed)
-            return self.rect.x, self.rect.y
-        if event_type == 2:
-            coord = [self.rect.x, self.rect.y]
-            target = [x, y]
-            delta_x = coord[0] - target[0]
-            delta_y = coord[1] - target[1]
-            long = (delta_x ** 2 + delta_y ** 2) ** 0.5
-            try:
-                angle = acos(delta_x / long) * (1 if delta_y > 0 else -1)
-            except ZeroDivisionError:
-                angle = acos(delta_x / 1) * (1 if delta_y > 0 else -1)
-            self.image, self.rect = rot_center(self.image_start_gun, self.rect, -angle * 57 + 90)
-
-class Shot(pygame.sprite.Sprite):
-    def __init__(self, coord, target, type):
-        super().__init__(all_sprite)
-        self.image = self.image = pygame.image.load('data/пуля.jpg')
-        self.image = pygame.transform.scale(self.image
-                                                      , (15, 15))
-        self.image.set_colorkey(self.image.get_at((0, 0)))
-        self.type = type
-        coord = list(coord)
-        self.x_y = list((coord[0], coord[1]))
-        delta_x = coord[0] - target[0]
-        delta_y = coord[1] - target[1]
-        long = (delta_x ** 2 + delta_y ** 2) ** 0.5
-        try:
-            angle = acos(delta_x / long) * (1 if delta_y > 0 else -1)
-        except ZeroDivisionError:
-            angle = acos(delta_x / 1) * (1 if delta_y > 0 else -1)
-        speed = 20
-        self.speed_x = -cos(angle) * speed
-        self.speed_y = -sin(angle) * speed
-        self.angle = -angle * 57 + 90
-        self.rect = pygame.Rect(int(self.x_y[0]), int(self.x_y[1]), 20, 20)
-        self.image, self.rect = rot_center(self.image, self.rect, self.angle)
-        self.rect = self.rect.move(self.speed_x * 2.5, self.speed_y * 2.5)
-        all_sprite.add(self)
-
-    def update(self, x, y, event_type):
-        if event_type == 1:
-            self.rect = self.rect.move(self.speed_x, self.speed_y)
-        if event_type == 3:
-            if count_otskok <= 2:
-                if 0 <= self.angle <= 90:
-                    self.angle += 90
-                elif 90 <= self.angle <= 180:
-                    self.image, self.rect = rot_center(self.image, self.rect, -self.angle * 57 + 90)
-                elif 0 <= -self.angle * 57 + 90 <= 90:
-                    self.angle += 90
-                elif 0 <= -self.angle * 57 + 90 <= 90:
-                    self.angle += 90
-                self.image, self.rect = rot_center(self.image, self.rect, -self.angle * 57 + 90)
-            else:
-                all_sprite.remove(self)
-
-pygame.display.set_caption('Pull up on the tank, и я еду в бой')
-WIDTH, HEIGHT = 1000, 800
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-sprite = pygame.sprite.Sprite()
-all_sprite = pygame.sprite.Group()
+Border(5, 5, width - 5, 5)
+Border(5, height - 5, width - 5, height - 5)
+Border(5, 5, 5, height - 5)
+Border(width - 5, 5, width - 5, height - 5)
 clock = pygame.time.Clock()
-running = True
 
-start_pos_x, start_pos_y = 500, 500
+for i in range(10):
+    Ball(20, 100, 100)
 
-our_tank = (Tank_gus(start_pos_x, start_pos_y), Tank_gun(start_pos_x + 12, start_pos_y - 15, 0))
-all_walls = [[Block_of_wall(i * 10, 0) for i in range(80)],
-             [Block_of_wall(0, i * 10) for i in range(100)],
-             [Block_of_wall(i * 10, WIDTH - 10) for i in range(80)],
-             [Block_of_wall(HEIGHT - 10, i * 10) for i in range(100)]]
-for spisok in all_walls:
-    for block in spisok:
-        block.render(screen)
-start_screen()
-flag = 0
-flag_gun = 0
-flag_shot = 0
-count_shot = 0
-
-while running:
+run = True
+while run:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            running = False
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            x, y = event.pos
-            if not flag_shot:
-                shot = Shot([our_tank[0].rect.x + 25, our_tank[0].rect.y + 25], [x, y])
-                flag = 1
-                flag_gun = 1
-                flag_shot = 1
+            run = False
 
-    if flag_shot:
-        if count_shot == 5:
-            flag_shot = 0
-            count_shot = 0
-        else:
-            count_shot += 1
-
-
-    if flag:
-        all_sprite.update(x, y, 1)
-    if flag_gun:
-        all_sprite.update(x, y, 2)
-        flag_gun = 0
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_w]:
-        all_sprite.update(0, -1, 0)
-    elif keys[pygame.K_a]:
-        all_sprite.update(-1, 0, 0)
-    elif keys[pygame.K_s]:
-        all_sprite.update(0, 1, 0)
-    elif keys[pygame.K_d]:
-        all_sprite.update(1, 0, 0)
+    clock.tick(100)
     screen.fill((255, 255, 255))
-    for spisok in all_walls:
-        for block in spisok:
-            block.render(screen)
-    all_sprite.draw(screen)
-    clock.tick(10)
-    pygame.display.flip()
+    all_sprites.update()
+    all_sprites.draw(screen)
+    pygame.display.update()
 
 pygame.quit()
