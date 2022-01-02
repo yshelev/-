@@ -197,11 +197,16 @@ class Shot(pygame.sprite.Sprite):
                     else:
                         self.angle = -180 - self.angle
                     self.image, self.rect = rot_center(self.image_start_patr, self.rect, self.angle)
-
+                    self.count += 1
+                    if self.count == 3:
+                        all_sprite.remove(self)
                 elif pygame.sprite.spritecollideany(self, vertical_borders):
                     self.speed_x = -self.speed_x
                     self.angle = -self.angle
                     self.image, self.rect = rot_center(self.image_start_patr, self.rect, self.angle)
+                    self.count += 1
+                    if self.count == 3:
+                        all_sprite.remove(self)
             elif self.type == 0:
                 self.rect = self.rect.move(self.speed_x, self.speed_y)
                 if pygame.sprite.spritecollideany(self, horizontal_borders):
@@ -249,19 +254,17 @@ while running:
         if event.type == pygame.MOUSEBUTTONDOWN:
             x, y = event.pos
             if not flag_shot:
-                if our_tank[1].weapon_type == 0:
-                    shot = Shot([our_tank[0].rect.x + 25, our_tank[0].rect.y + 25], [x, y], 0)
-                elif our_tank[1].weapon_type == 2:
+                if our_tank[1].weapon_type == 2:
                     shotgun_shot_0 = Shot([our_tank[0].rect.x + 25, our_tank[0].rect.y + 25], [x, y], 2)
                     shotgun_shot_1 = Shot([our_tank[0].rect.x + 25, our_tank[0].rect.y + 25], [x + 50, y + 50], 2)
                     shotgun_shot_2 = Shot([our_tank[0].rect.x + 25, our_tank[0].rect.y + 25], [x - 50, y - 50], 2)
-                elif our_tank[1].weapon_type == 1:
-                    shot = Shot([our_tank[0].rect.x + 25, our_tank[0].rect.y + 25], [x, y], 1)
-                    print(shot.count)
+                else:
+                    shot = Shot([our_tank[0].rect.x + 25, our_tank[0].rect.y + 25], [x, y], our_tank[1].weapon_type)
                 flag = 1
                 flag_gun = 1
                 flag_shot = 1
 
+    print(our_tank[1].weapon_type)
     if flag_shot:
         if count_shot == 5:
             flag_shot = 0
@@ -274,7 +277,7 @@ while running:
         all_sprite.update(x, y, 2)
         flag_gun = 0
     keys = pygame.key.get_pressed()
-    if keys[pygame.K_p]:
+    if keys[pygame.K_SPACE]:
         if our_tank[1].weapon_type == 2:
             our_tank[1].weapon_type = 0
         else:
