@@ -30,6 +30,16 @@ def terminate():
     sys.exit()
 
 
+def draw_normal_name(scr):
+    normal_name = {0: 'normal weapon',
+                       1: 'normal weapon with a ricochet',
+                       2: 'shotgun'}
+    font = pygame.font.Font(None, 25)
+    text = font.render(f"weapon type = {normal_name[our_tank[1].weapon_type]}", True, (0, 0, 0))
+    text_x = 10
+    text_y = 10
+    scr.blit(text, (text_x, text_y))
+
 def start_screen():
     intro_text = ["ЗАСТАВКА", "",
                   "Правила игры",
@@ -152,7 +162,6 @@ class Tank_gun(pygame.sprite.Sprite):
                 angle = acos(delta_x / 1) * (1 if delta_y > 0 else -1)
             self.image, self.rect = rot_center(self.image_start_gun, self.rect, -angle * 57 + 90)
 
-
 class Shot(pygame.sprite.Sprite):
     def __init__(self, coord, target, type):
         super().__init__(all_sprite)
@@ -178,7 +187,6 @@ class Shot(pygame.sprite.Sprite):
         self.speed_x = -cos(angle) * speed
         self.speed_y = -sin(angle) * speed
         self.angle = -angle * 57 + 90
-        print(self.angle)
         self.rect = pygame.Rect(int(self.x_y[0]), int(self.x_y[1]), 20, 20)
         self.image, self.rect = rot_center(self.image_start_patr, self.rect, self.angle)
         self.rect = self.rect.move(self.speed_x * 2.5, self.speed_y * 2.5)
@@ -264,7 +272,6 @@ while running:
                 flag_gun = 1
                 flag_shot = 1
 
-    print(our_tank[1].weapon_type)
     if flag_shot:
         if count_shot == 5:
             flag_shot = 0
@@ -291,6 +298,7 @@ while running:
     elif keys[pygame.K_d]:
         all_sprite.update(1, 0, 0)
     screen.fill((255, 255, 255))
+    draw_normal_name(screen)
     all_sprite.draw(screen)
     clock.tick(10)
     pygame.display.flip()
