@@ -178,9 +178,12 @@ class Shot(pygame.sprite.Sprite):
         self.speed_x = -cos(angle) * speed
         self.speed_y = -sin(angle) * speed
         self.angle = -angle * 57 + 90
+        print(self.angle)
         self.rect = pygame.Rect(int(self.x_y[0]), int(self.x_y[1]), 20, 20)
         self.image, self.rect = rot_center(self.image_start_patr, self.rect, self.angle)
         self.rect = self.rect.move(self.speed_x * 2.5, self.speed_y * 2.5)
+        if self.type == 1:
+            self.count = 0
         all_sprite.add(self)
 
     def update(self, x, y, event_type):
@@ -197,10 +200,7 @@ class Shot(pygame.sprite.Sprite):
 
                 elif pygame.sprite.spritecollideany(self, vertical_borders):
                     self.speed_x = -self.speed_x
-                    if self.speed_x <= 0:
-                        self.angle = 90 - self.angle
-                    else:
-                        self.angle = -self.angle - 90
+                    self.angle = -self.angle
                     self.image, self.rect = rot_center(self.image_start_patr, self.rect, self.angle)
             elif self.type == 0:
                 self.rect = self.rect.move(self.speed_x, self.speed_y)
@@ -257,6 +257,7 @@ while running:
                     shotgun_shot_2 = Shot([our_tank[0].rect.x + 25, our_tank[0].rect.y + 25], [x - 50, y - 50], 2)
                 elif our_tank[1].weapon_type == 1:
                     shot = Shot([our_tank[0].rect.x + 25, our_tank[0].rect.y + 25], [x, y], 1)
+                    print(shot.count)
                 flag = 1
                 flag_gun = 1
                 flag_shot = 1
@@ -267,7 +268,6 @@ while running:
             count_shot = 0
         else:
             count_shot += 1
-
     if flag:
         all_sprite.update(x, y, 1)
     if flag_gun:
@@ -289,7 +289,7 @@ while running:
         all_sprite.update(1, 0, 0)
     screen.fill((255, 255, 255))
     all_sprite.draw(screen)
-    clock.tick(15)
+    clock.tick(10)
     pygame.display.flip()
 
 pygame.quit()
