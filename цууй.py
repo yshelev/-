@@ -76,11 +76,11 @@ class Border(pygame.sprite.Sprite):
     def __init__(self, x1, y1, x2, y2):
         super().__init__(all_sprite)
         if x1 == x2:
-            self.add(vertical_borders)
+            vertical_borders.add(self)
             self.image = pygame.Surface([1, y2 - y1])
             self.rect = pygame.Rect(x1, y1, 1, y2 - y1)
         else:
-            self.add(horizontal_borders)
+            horizontal_borders.add(self)
             self.image = pygame.Surface([x2 - x1, 1])
             self.rect = pygame.Rect(x1, y1, x2 - x1, 1)
 
@@ -107,7 +107,7 @@ class Tank_gus(pygame.sprite.Sprite):
             self.rotate(x, y)
 
     def move(self, x, y):
-        speed = 10
+        speed = 5
         self.rect = self.rect.move(x * speed, y * speed)
 
     def rotate(self, x, y):
@@ -147,7 +147,7 @@ class Tank_gun(pygame.sprite.Sprite):
 
     def update(self, x, y, event_type):
         if event_type == 0:
-            speed = 10
+            speed = 5
             self.rect = self.rect.move(x * speed, y * speed)
             return self.rect.x, self.rect.y
         if event_type == 2:
@@ -183,13 +183,13 @@ class Shot(pygame.sprite.Sprite):
             angle = acos(delta_x / long) * (1 if delta_y > 0 else -1)
         except ZeroDivisionError:
             angle = acos(delta_x / 1) * (1 if delta_y > 0 else -1)
-        speed = 20
+        speed = 10
         self.speed_x = -cos(angle) * speed
         self.speed_y = -sin(angle) * speed
         self.angle = -angle * 57 + 90
         self.rect = pygame.Rect(int(self.x_y[0]), int(self.x_y[1]), 20, 20)
         self.image, self.rect = rot_center(self.image_start_patr, self.rect, self.angle)
-        self.rect = self.rect.move(self.speed_x * 2.5, self.speed_y * 2.5)
+        self.rect = self.rect.move(self.speed_x * 5, self.speed_y * 5)
         if self.type == 1:
             self.count = 0
         all_sprite.add(self)
@@ -254,6 +254,8 @@ flag = 0
 flag_gun = 0
 flag_shot = 0
 count_shot = 0
+flag_change = 0
+count_change = 0
 
 while running:
     for event in pygame.event.get():
@@ -273,7 +275,7 @@ while running:
                 flag_shot = 1
 
     if flag_shot:
-        if count_shot == 5:
+        if count_shot == 10:
             flag_shot = 0
             count_shot = 0
         else:
@@ -285,10 +287,18 @@ while running:
         flag_gun = 0
     keys = pygame.key.get_pressed()
     if keys[pygame.K_SPACE]:
-        if our_tank[1].weapon_type == 2:
-            our_tank[1].weapon_type = 0
+        if not flag_change:
+            flag_change = 1
+            if our_tank[1].weapon_type == 2:
+                our_tank[1].weapon_type = 0
+            else:
+                our_tank[1].weapon_type += 1
+    if flag_change:
+        if count_change == 10:
+            flag_change = 0
+            count_change = 0
         else:
-            our_tank[1].weapon_type += 1
+            count_change += 1
     if keys[pygame.K_w]:
         all_sprite.update(0, -1, 0)
     elif keys[pygame.K_a]:
@@ -300,7 +310,7 @@ while running:
     screen.fill((255, 255, 255))
     draw_normal_name(screen)
     all_sprite.draw(screen)
-    clock.tick(10)
+    clock.tick(20)
     pygame.display.flip()
 
 pygame.quit()

@@ -76,11 +76,11 @@ class Border(pygame.sprite.Sprite):
     def __init__(self, x1, y1, x2, y2):
         super().__init__(all_sprite)
         if x1 == x2:
-            self.add(vertical_borders)
+            vertical_borders.add(self)
             self.image = pygame.Surface([1, y2 - y1])
             self.rect = pygame.Rect(x1, y1, 1, y2 - y1)
         else:
-            self.add(horizontal_borders)
+            horizontal_borders.add(self)
             self.image = pygame.Surface([x2 - x1, 1])
             self.rect = pygame.Rect(x1, y1, x2 - x1, 1)
 
@@ -107,7 +107,7 @@ class Tank_gus(pygame.sprite.Sprite):
             self.rotate(x, y)
 
     def move(self, x, y):
-        speed = 10
+        speed = 5
         self.rect = self.rect.move(x * speed, y * speed)
 
     def rotate(self, x, y):
@@ -147,7 +147,7 @@ class Tank_gun(pygame.sprite.Sprite):
 
     def update(self, x, y, event_type):
         if event_type == 0:
-            speed = 10
+            speed = 5
             self.rect = self.rect.move(x * speed, y * speed)
             return self.rect.x, self.rect.y
         if event_type == 2:
@@ -300,7 +300,7 @@ while running:
     screen.fill((255, 255, 255))
     draw_normal_name(screen)
     all_sprite.draw(screen)
-    clock.tick(10)
+    clock.tick(20)
     pygame.display.flip()
 
 pygame.quit()
