@@ -187,6 +187,7 @@ class Our_tank_gus(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
         self.hp = 3
+        self.can_move = True
         all_sprite.add(self)
 
     def update(self, x, y, event_type):
@@ -209,6 +210,9 @@ class Our_tank_gus(pygame.sprite.Sprite):
         if pygame.sprite.spritecollide(self, horizontal_borders, False) or \
                 pygame.sprite.spritecollide(self, vertical_borders, False):
             self.rect = pred_rect
+            self.can_move = False
+        else:
+            self.can_move = True
 
 
 
@@ -259,6 +263,8 @@ class Our_tank_gun(pygame.sprite.Sprite):
             speed = 5
             pred_rect = self.rect.move(0, 0)
             self.rect = self.rect.move(x * speed, y * speed)
+            if not our_tank[0].can_move:
+                self.rect = pred_rect
 
 
 
