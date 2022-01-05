@@ -203,7 +203,14 @@ class Our_tank_gus(pygame.sprite.Sprite):
 
     def move(self, x, y):
         speed = 5
+        pred_rect = self.rect.move(0, 0)
         self.rect = self.rect.move(x * speed, y * speed)
+
+        if pygame.sprite.spritecollide(self, horizontal_borders, False) or \
+                pygame.sprite.spritecollide(self, vertical_borders, False):
+            self.rect = pred_rect
+
+
 
     def rotate(self, x, y):
         pos = (screen.get_width() / 2, screen.get_height() / 2)
@@ -250,8 +257,11 @@ class Our_tank_gun(pygame.sprite.Sprite):
 
         if event_type == 0:
             speed = 5
+            pred_rect = self.rect.move(0, 0)
             self.rect = self.rect.move(x * speed, y * speed)
-            return self.rect.x, self.rect.y
+
+
+
         if event_type == 2:
             coord = [self.rect.x, self.rect.y]
             target = [x, y]
