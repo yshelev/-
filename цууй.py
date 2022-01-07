@@ -159,7 +159,7 @@ class Shot(pygame.sprite.Sprite):
         if event_type == 1:
             self.rect = self.rect.move(self.speed_x, self.speed_y)
 
-pygame.display.set_caption('Pull up on the tank, и я еду в бой')
+pygame.display.set_caption('Pull up on the tank, и я еду в бой.')
 WIDTH, HEIGHT = 1000, 800
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 sprite = pygame.sprite.Sprite()
