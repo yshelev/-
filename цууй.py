@@ -384,10 +384,10 @@ flag_change = 0
 count_change = 0
 
 while running:
-    y_tunk += 100  # Это скорость пули танка противника
+    y_tunk += 100  # Это скорость пули танка противника.
     shot_gun_of_first_tunk = Shot([x_tunk + 25, y_tunk + 25],
                           [515, 0], 2, 0)
-    shot_gun_of_second_tunk = Shot([600 + 25, y_tunk + 25],     # } Это выстрелы танков противника
+    shot_gun_of_second_tunk = Shot([600 + 25, y_tunk + 25],     # } Это выстрелы танков противника.
                    [615, 0], 2, 0)
     shot_gun_of_third_tunk = Shot([700 + 25, y_tunk + 25],
                    [715, 0], 2, 0)
