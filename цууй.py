@@ -368,7 +368,7 @@ our_tank = (Our_tank_gus(start_pos_x, start_pos_y), Our_tank_gun(start_pos_x + 1
 vs_tank_0 = (VS_tank_gus(500, 10), VS_tank_gun(515, 0, 0))
 vs_tank_1 = (VS_tank_gus(600, 10), VS_tank_gun(615, 0, 0))
 vs_tank_2 = (VS_tank_gus(700, 10), VS_tank_gun(715, 0, 0))
-x_tunk, y_tunk = 500, 100 # x_tunk - это x танка(я так думаю); y_tunk - это перваночальная позиция пульки
+x_tunk, y_tunk = 500, 100 # x_tunk - это x танка(я так думаю); y_tunk - это перваночальная позиция пульки.
 start_screen()
 
 Border(5, 5, WIDTH - 5, 5)
