@@ -77,6 +77,42 @@ def start_screen():
         pygame.display.flip()
         clock.tick(FPS)
 
+class AnimatedFire(pygame.sprite.Sprite):
+    def __init__(self, columns, rows, x, y):
+        super().__init__(all_sprite)
+        self.frames = []
+        self.sheet = pygame.image.load('data/animated_fire.png')
+        self.cut_sheet(self.sheet, columns, rows)
+        self.cur_frame = 0
+        self.image = self.frames[self.cur_frame]
+        self.count = 0
+        self.rect = self.rect.move(x, y)
+        self.speed = 5
+
+    def cut_sheet(self, sheet, columns, rows):
+        self.rect = pygame.Rect(0, 0, self.sheet.get_width() // columns,
+                                self.sheet.get_height() // rows)
+        for j in range(rows):
+            for i in range(columns):
+                frame_location = (self.rect.w * i, self.rect.h * j)
+                self.frames.append(sheet.subsurface(pygame.Rect(
+                    frame_location, self.rect.size)))
+
+    def update(self, x, y, event_type):
+        if event_type == 1:
+            self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+            self.image = self.frames[self.cur_frame]
+            self.image = pygame.transform.scale(self.image, (20, 20))
+            self.count += 1
+            if self.count == 20:
+                self.kill()
+        if event_type == 0:
+            pred_rect = self.rect.move(0, 0)
+            self.rect = self.rect.move(x * self.speed, y * self.speed)
+            if not our_tank[0].can_move:
+                self.rect = pred_rect
+
+
 class VS_tank_gun(pygame.sprite.Sprite):
     def __init__(self, x, y, weapon_type, number_of_tank):
         super().__init__(all_sprite)
@@ -438,9 +474,11 @@ while running:
                                               [x + 50, y + 50], 2, 0)
                         shotgun_shot_2 = Shot([our_tank[0].rect.x + 25, our_tank[0].rect.y + 25],
                                               [x - 50, y - 50], 2, 0)
+                        fire = AnimatedFire(5, 4, shotgun_shot_0.rect.x, shotgun_shot_0.rect.y)
                     else:
                         shot = Shot([our_tank[0].rect.x + 25, our_tank[0].rect.y + 25], [x, y],
                                     our_tank[1].weapon_type, 0)
+                        fire = AnimatedFire(5, 4, shot.rect.x, shot.rect.y)
                     flag_gun = 1
                     flag_shot = False
 
