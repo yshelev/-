@@ -398,8 +398,8 @@ running = True
 start_pos_x, start_pos_y = 500, 500
 
 our_tank = (Our_tank_gus(start_pos_x, start_pos_y), Our_tank_gun(start_pos_x + 12, start_pos_y - 15, 0))
-vs_tank_0 = (VS_tank_gus(500, 10, 0), VS_tank_gun(512, 0, 2, 0))
-vs_tank_1 = (VS_tank_gus(600, 10, 1), VS_tank_gun(612, 0, 2, 1))
+vs_tank_0 = (VS_tank_gus(500, 10, 0), VS_tank_gun(512, 0, 0, 0))
+vs_tank_1 = (VS_tank_gus(600, 10, 1), VS_tank_gun(612, 0, 1, 1))
 vs_tank_2 = (VS_tank_gus(700, 10, 2), VS_tank_gun(712, 0, 2, 2))
 all_vs_tanks = [vs_tank_0, vs_tank_1, vs_tank_2]
 
@@ -420,6 +420,8 @@ count_change = 0
 
 vs_tank_count_shot = 0
 vs_tank_flag_shot = True
+
+count_move_vs_tank = 0
 
 while running:
     for event in pygame.event.get():
@@ -460,7 +462,7 @@ while running:
             else:
                 our_tank[1].weapon_type += 1
     if flag_change:
-        if count_change == 10:
+        if count_change == 3:
             flag_change = 0
             count_change = 0
         else:
@@ -474,7 +476,38 @@ while running:
     elif keys[pygame.K_d]:
         all_sprite.update(1, 0, 0)
 
-    all_sprite.update(0, 1, 3)
+    if count_move_vs_tank == 0:
+        move_vs_tank_x, move_vs_tank_y = random.randint(-10, 10), random.randint(-10, 10)
+        heads_and_tails = random.randint(0, 1)
+        if heads_and_tails:
+            if move_vs_tank_x < 0:
+                move_x = -1
+                count_move_vs_tank = move_vs_tank_x
+            elif move_vs_tank_x == 0:
+                move_x = 0
+                count_move_vs_tank = move_vs_tank_x
+            else:
+                move_x = 1
+                count_move_vs_tank = move_vs_tank_x
+            move_y = 0
+        else:
+            if move_vs_tank_y < 0:
+                move_y = -1
+                count_move_vs_tank = move_vs_tank_x
+            elif move_vs_tank_y == 0:
+                move_y = 0
+                count_move_vs_tank = move_vs_tank_x
+            else:
+                move_y = 1
+                count_move_vs_tank = move_vs_tank_x
+            move_x = 0
+
+    all_sprite.update(move_x, move_y, 3)
+    if count_move_vs_tank < 0:
+        count_move_vs_tank += 1
+    else:
+        count_move_vs_tank -= 1
+
     if vs_tank_flag_shot:
         if not (our_tank[1].die or our_tank[0].die):
             if not (all_vs_tanks[0][0].die or all_vs_tanks[0][1].die):
@@ -526,7 +559,7 @@ while running:
             vs_tank_count_shot = 0
         else:
             vs_tank_count_shot += 1
-    all_sprite.update(0, 1, 1)
+    all_sprite.update(1, 0, 1)
     screen.fill((255, 255, 255))
     draw_normal_name(screen)
     draw_hp(screen)
