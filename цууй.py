@@ -78,7 +78,7 @@ def start_screen():
         clock.tick(FPS)
 
 class VS_tank_gun(pygame.sprite.Sprite):
-    def __init__(self, x, y, weapon_type):
+    def __init__(self, x, y, weapon_type, number_of_tank):
         super().__init__(all_sprite)
         self.image = pygame.image.load('data/new_tank_gun.jpg')
         self.image_start_gun = pygame.image.load('data/new_tank_gun.jpg')
@@ -94,6 +94,7 @@ class VS_tank_gun(pygame.sprite.Sprite):
         self.rect.y = y
         self.speed = 5
         self.weapon_type = weapon_type
+        self.number = number_of_tank
         all_sprite.add(self)
         all_vs_tanks_sprites.add(self)
 
@@ -101,12 +102,28 @@ class VS_tank_gun(pygame.sprite.Sprite):
         if pygame.sprite.spritecollide(self, all_shot, False):
             if pygame.sprite.spritecollide(self, all_shot, False)[0].whose_shot != 2:
                     pygame.sprite.spritecollide(self, all_shot, True)
-                    all_sprite.remove(pygame.sprite.spritecollide(self, all_vs_tanks_sprites, False)[0])
-                    all_sprite.remove(self)
+                    pygame.sprite.spritecollide(self, all_vs_tanks_sprites, False)[0].kill()
                     self.die = True
+                    self.kill()
 
         if event_type == 3:
+            pred_rect = self.rect.move(0, 0)
             self.rect = self.rect.move(x * self.speed, y * self.speed)
+            if not all_vs_tanks[self.number][0].can_move:
+                self.rect = pred_rect
+
+        if event_type == 4:
+            coord = [self.rect.x, self.rect.y]
+            target = [x, y]
+            delta_x = coord[0] + 13 - target[0]
+            delta_y = coord[1] + 40 - target[1]
+            long = (delta_x ** 2 + delta_y ** 2) ** 0.5
+            try:
+                angle = acos(delta_x / long) * (1 if delta_y > 0 else -1)
+            except ZeroDivisionError:
+                angle = acos(delta_x / 1) * (1 if delta_y > 0 else -1)
+            self.image, self.rect = rot_center(self.image_start_gun, self.rect, -angle * 57 + 90)
+
 
 class VS_tank_gus(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -123,6 +140,7 @@ class VS_tank_gus(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
         self.die = False
+        self.can_move = True
         self.speed = 5
         all_sprite.add(self)
         all_vs_tanks_sprites.add(self)
@@ -131,31 +149,40 @@ class VS_tank_gus(pygame.sprite.Sprite):
         if pygame.sprite.spritecollide(self, all_shot, False):
             if pygame.sprite.spritecollide(self, all_shot, False)[0].whose_shot != 2:
                 pygame.sprite.spritecollide(self, all_shot, True)
-                all_sprite.remove(pygame.sprite.spritecollide(self, all_vs_tanks_sprites, False)[1])
-                all_sprite.remove(self)
+                pygame.sprite.spritecollide(self, all_vs_tanks_sprites, False)[1].kill()
                 self.die = True
+                self.kill()
+
         if event_type == 3:
             self.move(x, y)
             self.rotate(x, y)
 
 
     def move(self, x, y):
+        pred_rect = self.rect.move(0, 0)
         self.rect = self.rect.move(x * self.speed, y * self.speed)
 
-    def rotate(self, x, y):
-        pos = (screen.get_width() / 2, screen.get_height() / 2)
-        pos = (200, 200)
-        w, h = self.image.get_size()
-        if x == 0:
-            if y == -1:
-                self.image = blitRotate(screen, self.image_start_gus, pos, (w / 2, h / 2), 180)
-            elif y == 1:
-                self.image = blitRotate(screen, self.image_start_gus, pos, (w / 2, h / 2), 0)
-        elif x == 1:
-            if y == 0:
-                self.image = blitRotate(screen, self.image_start_gus, pos, (w / 2, h / 2), 90)
+        if pygame.sprite.spritecollide(self, horizontal_borders, False) or \
+                pygame.sprite.spritecollide(self, vertical_borders, False):
+            self.rect = pred_rect
+            self.can_move = False
         else:
-            self.image = blitRotate(screen, self.image_start_gus, pos, (w / 2, h / 2), 270)
+            self.can_move = True
+
+    def rotate(self, x, y):
+            pos = (screen.get_width() / 2, screen.get_height() / 2)
+            pos = (200, 200)
+            w, h = self.image.get_size()
+            if x == 0:
+                if y == -1:
+                    self.image = blitRotate(screen, self.image_start_gus, pos, (w / 2, h / 2), 180)
+                elif y == 1:
+                    self.image = blitRotate(screen, self.image_start_gus, pos, (w / 2, h / 2), 0)
+            elif x == 1:
+                if y == 0:
+                    self.image = blitRotate(screen, self.image_start_gus, pos, (w / 2, h / 2), 90)
+            else:
+                self.image = blitRotate(screen, self.image_start_gus, pos, (w / 2, h / 2), 270)
 
 
 
@@ -187,7 +214,9 @@ class Our_tank_gus(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
         self.hp = 3
+        self.die = False
         self.can_move = True
+        self.speed = 5
         all_sprite.add(self)
 
     def update(self, x, y, event_type):
@@ -196,16 +225,16 @@ class Our_tank_gus(pygame.sprite.Sprite):
                 pygame.sprite.spritecollide(self, all_shot, True)
                 self.hp -= 1
                 if not self.hp:
-                    all_sprite.remove(our_tank[1])
-                    all_sprite.remove(self)
+                    self.die = True
+                    our_tank[1].kill()
+                    self.kill()
         if event_type == 0:
             self.move(x, y)
             self.rotate(x, y)
 
     def move(self, x, y):
-        speed = 5
         pred_rect = self.rect.move(0, 0)
-        self.rect = self.rect.move(x * speed, y * speed)
+        self.rect = self.rect.move(x * self.speed, y * self.speed)
 
         if pygame.sprite.spritecollide(self, horizontal_borders, False) or \
                 pygame.sprite.spritecollide(self, vertical_borders, False):
@@ -245,6 +274,7 @@ class Our_tank_gun(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
+        self.speed = 5
         self.weapon_type = weapon_type
         self.die = False
         all_sprite.add(self)
@@ -255,18 +285,15 @@ class Our_tank_gun(pygame.sprite.Sprite):
                 pygame.sprite.spritecollide(self, all_shot, True)
                 our_tank[0].hp -= 1
                 if not our_tank[0].hp:
-                    all_sprite.remove(our_tank[0])
-                    all_sprite.remove(self)
                     self.die = True
+                    our_tank[0].kill()
+                    self.kill()
 
         if event_type == 0:
-            speed = 5
             pred_rect = self.rect.move(0, 0)
-            self.rect = self.rect.move(x * speed, y * speed)
+            self.rect = self.rect.move(x * self.speed, y * self.speed)
             if not our_tank[0].can_move:
                 self.rect = pred_rect
-
-
 
         if event_type == 2:
             coord = [self.rect.x, self.rect.y]
@@ -292,7 +319,7 @@ class Shot(pygame.sprite.Sprite):
         self.image.set_colorkey(self.image.get_at((0, 0)))
         self.image_start_patr.set_colorkey(self.image.get_at((0, 0)))
         self.type = type
-        self.whose_shot = 0
+        self.whose_shot = bool
         coord = list(coord)
         self.x_y = list((coord[0], coord[1]))
         delta_x = coord[0] - target[0]
@@ -328,7 +355,7 @@ class Shot(pygame.sprite.Sprite):
                     self.image, self.rect = rot_center(self.image_start_patr, self.rect, self.angle)
                     self.count += 1
                     if self.count == 3:
-                        all_sprite.remove(self)
+                        self.kill()
                 elif pygame.sprite.spritecollideany(self, vertical_borders):
                     self.speed_x = -self.speed_x
                     self.angle = -self.angle
@@ -336,19 +363,19 @@ class Shot(pygame.sprite.Sprite):
                     self.count += 1
                     self.whose_shot = 1
                     if self.count == 3:
-                        all_sprite.remove(self)
+                        self.kill()
             elif self.type == 0:
                 self.rect = self.rect.move(self.speed_x, self.speed_y)
                 if pygame.sprite.spritecollideany(self, horizontal_borders):
-                    all_sprite.remove(self)
+                    self.kill()
                 elif pygame.sprite.spritecollideany(self, vertical_borders):
-                    all_sprite.remove(self)
+                    self.kill()
             elif self.type == 2:
                 self.rect = self.rect.move(self.speed_x, self.speed_y)
                 if pygame.sprite.spritecollideany(self, horizontal_borders):
-                    all_sprite.remove(self)
+                    self.kill()
                 elif pygame.sprite.spritecollideany(self, vertical_borders):
-                    all_sprite.remove(self)
+                    self.kill()
 
 
 pygame.display.set_caption('Pull up on the tank, и я еду в бой')
@@ -366,9 +393,10 @@ running = True
 start_pos_x, start_pos_y = 500, 500
 
 our_tank = (Our_tank_gus(start_pos_x, start_pos_y), Our_tank_gun(start_pos_x + 12, start_pos_y - 15, 0))
-vs_tank_0 = (VS_tank_gus(500, 10), VS_tank_gun(515, 0, 0))
-vs_tank_1 = (VS_tank_gus(600, 10), VS_tank_gun(615, 0, 0))
-vs_tank_2 = (VS_tank_gus(700, 10), VS_tank_gun(715, 0, 0))
+vs_tank_0 = (VS_tank_gus(500, 10), VS_tank_gun(515, 0, 2, 0))
+vs_tank_1 = (VS_tank_gus(600, 10), VS_tank_gun(615, 0, 2, 1))
+vs_tank_2 = (VS_tank_gus(700, 10), VS_tank_gun(715, 0, 2, 2))
+all_vs_tanks = [vs_tank_0, vs_tank_1, vs_tank_2]
 
 start_screen()
 
@@ -377,12 +405,16 @@ Border(5, HEIGHT - 5, WIDTH - 5, HEIGHT - 5)
 Border(5, 5, 5, HEIGHT- 5)
 Border(WIDTH - 5, 5, WIDTH - 5, HEIGHT - 5)
 
-flag = 0
 flag_gun = 0
-flag_shot = 0
+
+flag_shot = True
 count_shot = 0
+
 flag_change = 0
 count_change = 0
+
+vs_tank_count_shot = 0
+vs_tank_flag_shot = True
 
 while running:
     for event in pygame.event.get():
@@ -390,7 +422,7 @@ while running:
             running = False
         if event.type == pygame.MOUSEBUTTONDOWN:
             x, y = event.pos
-            if not flag_shot:
+            if flag_shot:
                 if not our_tank[1].die:
                     if our_tank[1].weapon_type == 2:
                         shotgun_shot_0 = Shot([our_tank[0].rect.x + 25, our_tank[0].rect.y + 25],
@@ -402,18 +434,15 @@ while running:
                     else:
                         shot = Shot([our_tank[0].rect.x + 25, our_tank[0].rect.y + 25], [x, y],
                                     our_tank[1].weapon_type, 0)
-                    flag = 1
                     flag_gun = 1
-                    flag_shot = 1
+                    flag_shot = False
 
-    if flag_shot:
+    if not flag_shot:
         if count_shot == 10:
-            flag_shot = 0
+            flag_shot = True
             count_shot = 0
         else:
             count_shot += 1
-    if flag:
-        all_sprite.update(x, y, 1)
     if flag_gun:
         all_sprite.update(x, y, 2)
         flag_gun = 0
@@ -441,7 +470,57 @@ while running:
         all_sprite.update(1, 0, 0)
 
     all_sprite.update(0, 1, 3)
-    all_sprite.update(0, 1, 4)
+    if vs_tank_flag_shot:
+        if not all_vs_tanks[0][0].die:
+            if all_vs_tanks[0][1].weapon_type == 2:
+                shotgun_shot_0 = Shot([all_vs_tanks[0][0].rect.x + 25,all_vs_tanks[0][0].rect.y + 25],
+                                      [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25], 2, 2)
+                shotgun_shot_1 = Shot([all_vs_tanks[0][0].rect.x + 25, all_vs_tanks[0][0].rect.y + 25],
+                                      [our_tank[0].rect.x + 75, our_tank[0].rect.y + 75], 2, 2)
+                shotgun_shot_2 = Shot([all_vs_tanks[0][0].rect.x + 25, all_vs_tanks[0][0].rect.y + 25],
+                                      [our_tank[0].rect.x - 25, our_tank[0].rect.y - 25], 2, 2)
+            else:
+                shot = Shot([all_vs_tanks[0][0].rect.x + 25, all_vs_tanks[0][0].rect.y + 25],
+                            [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25],
+                            all_vs_tanks[0][1].weapon_type, 2)
+
+        if not all_vs_tanks[1][0].die:
+            if all_vs_tanks[1][1].weapon_type == 2:
+                shotgun_shot_0 = Shot([all_vs_tanks[1][0].rect.x + 25,all_vs_tanks[1][0].rect.y + 25],
+                                      [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25],
+                                      2, 2)
+                shotgun_shot_1 = Shot([all_vs_tanks[1][0].rect.x + 25, all_vs_tanks[1][0].rect.y + 25],
+                                      [our_tank[0].rect.x + 75, our_tank[0].rect.y + 75],
+                                      all_vs_tanks[0][1].weapon_type, 2)
+                shotgun_shot_2 = Shot([all_vs_tanks[1][0].rect.x + 25, all_vs_tanks[1][0].rect.y + 25],
+                                      [our_tank[0].rect.x - 25, our_tank[0].rect.y - 25],
+                                      all_vs_tanks[0][1].weapon_type, 2)
+            else:
+                shot = Shot([all_vs_tanks[1][0].rect.x + 25, all_vs_tanks[1][0].rect.y + 25],
+                            [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25],
+                            all_vs_tanks[0][1].weapon_type, 2)
+
+        if not all_vs_tanks[2][0].die:
+            if all_vs_tanks[2][1].weapon_type == 2:
+                shotgun_shot_0 = Shot([all_vs_tanks[2][0].rect.x + 25, all_vs_tanks[2][0].rect.y + 25],
+                                      [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25], 2, 2)
+                shotgun_shot_1 = Shot([all_vs_tanks[2][0].rect.x + 25, all_vs_tanks[2][0].rect.y + 25],
+                                      [our_tank[0].rect.x + 75, our_tank[0].rect.y + 75], 2, 2)
+                shotgun_shot_2 = Shot([all_vs_tanks[2][0].rect.x - 25, all_vs_tanks[2][0].rect.y - 25],
+                                      [our_tank[0].rect.x - 25, our_tank[0].rect.y - 25], 2, 2)
+            else:
+                shot = Shot([all_vs_tanks[2][0].rect.x + 25, all_vs_tanks[2][0].rect.y + 25],
+                            [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25],
+                            all_vs_tanks[0][1].weapon_type, 2)
+        vs_tank_flag_shot = False
+
+    if not vs_tank_flag_shot:
+        if vs_tank_count_shot == 20:
+            vs_tank_flag_shot = True
+            vs_tank_count_shot = 0
+        else:
+            vs_tank_count_shot += 1
+    all_sprite.update(0, 1, 1)
     screen.fill((255, 255, 255))
     draw_normal_name(screen)
     draw_hp(screen)
