@@ -78,7 +78,7 @@ def start_screen():
         clock.tick(FPS)
 
 class AnimatedFire(pygame.sprite.Sprite):
-    def __init__(self, columns, rows, x, y, bool, number_of_tank):
+    def __init__(self, columns, rows, x, y, bool, number_of_tank, flag):
         super().__init__(all_sprite)
         self.frames = []
         self.sheet = pygame.image.load('data/animated_fire.png')
@@ -90,6 +90,7 @@ class AnimatedFire(pygame.sprite.Sprite):
         self.speed = 5
         self.bool = bool
         self.number = number_of_tank
+        self.flag = flag
 
     def cut_sheet(self, sheet, columns, rows):
         self.rect = pygame.Rect(0, 0, self.sheet.get_width() // columns,
@@ -110,16 +111,21 @@ class AnimatedFire(pygame.sprite.Sprite):
                 self.kill()
         if event_type == 0:
             if self.bool != 2:
-                pred_rect = self.rect.move(0, 0)
-                self.rect = self.rect.move(x * self.speed, y * self.speed)
-                if not our_tank[0].can_move:
-                    self.rect = pred_rect
+                if self.flag:
+                    pred_rect = self.rect.move(0, 0)
+                    self.rect = self.rect.move(x * self.speed, y * self.speed)
+                    if not our_tank[0].can_move:
+                        self.rect = pred_rect
         if event_type == 3:
             if self.bool == 2:
-                pred_rect = self.rect.move(0, 0)
-                self.rect = self.rect.move(x * self.speed, y * self.speed)
-                if not all_vs_tanks[self.number][0].can_move:
-                    self.rect = pred_rect
+                if self.flag:
+                    pred_rect = self.rect.move(0, 0)
+                    self.rect = self.rect.move(x * self.speed, y * self.speed)
+                    if self.number in range(0, 3):
+                        if all_vs_tanks[self.number][0].die:
+                            self.kill()
+                        elif not all_vs_tanks[self.number][0].can_move:
+                            self.rect = pred_rect
 
 
 class VS_tank_gun(pygame.sprite.Sprite):
@@ -263,7 +269,7 @@ class Our_tank_gus(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-        self.hp = 5
+        self.hp = 9999999999999999999999999
         self.die = False
         self.can_move = True
         self.speed = 5
@@ -394,7 +400,7 @@ class Shot(pygame.sprite.Sprite):
             self.count = 0
         all_sprite.add(self)
         all_shot.add(self)
-        fire = AnimatedFire(5, 4, self.rect.x, self.rect.y, self.whose_shot, self.number)
+        fire = AnimatedFire(5, 4, self.rect.x, self.rect.y, self.whose_shot, self.number, True)
 
     def update(self, x, y, event_type):
         if event_type == 1:
@@ -411,6 +417,7 @@ class Shot(pygame.sprite.Sprite):
                     self.count += 1
                     if self.count == 3:
                         self.kill()
+                        fire = AnimatedFire(5, 4, self.rect.x, self.rect.y, self.whose_shot, 100, False)
                 elif pygame.sprite.spritecollideany(self, vertical_borders):
                     self.speed_x = -self.speed_x
                     self.angle = -self.angle
@@ -419,18 +426,23 @@ class Shot(pygame.sprite.Sprite):
                     self.whose_shot = 1
                     if self.count == 3:
                         self.kill()
+                        fire = AnimatedFire(5, 4, self.rect.x, self.rect.y, self.whose_shot, 100, False)
             elif self.type == 0:
                 self.rect = self.rect.move(self.speed_x, self.speed_y)
                 if pygame.sprite.spritecollideany(self, horizontal_borders):
                     self.kill()
+                    fire = AnimatedFire(5, 4, self.rect.x, self.rect.y, self.whose_shot, 100, False)
                 elif pygame.sprite.spritecollideany(self, vertical_borders):
                     self.kill()
+                    fire = AnimatedFire(5, 4, self.rect.x, self.rect.y, self.whose_shot, 100, False)
             elif self.type == 2:
                 self.rect = self.rect.move(self.speed_x, self.speed_y)
                 if pygame.sprite.spritecollideany(self, horizontal_borders):
                     self.kill()
+                    fire = AnimatedFire(5, 4, self.rect.x, self.rect.y, self.whose_shot, 100, False)
                 elif pygame.sprite.spritecollideany(self, vertical_borders):
                     self.kill()
+                    fire = AnimatedFire(5, 4, self.rect.x, self.rect.y, self.whose_shot, 100, False)
 
 
 pygame.display.set_caption('Pull up on the tank, и я еду в бой')
@@ -484,16 +496,14 @@ while running:
                 if not our_tank[1].die:
                     if our_tank[1].weapon_type == 2:
                         shotgun_shot_0 = Shot([our_tank[0].rect.x + 25, our_tank[0].rect.y + 25],
-                                              [x, y], 2, 0)
+                                              [x, y], 2, 0, -1)
                         shotgun_shot_1 = Shot([our_tank[0].rect.x + 25, our_tank[0].rect.y + 25],
-                                              [x + 50, y + 50], 2, 0)
+                                              [x + 50, y + 50], 2, 0, -1)
                         shotgun_shot_2 = Shot([our_tank[0].rect.x + 25, our_tank[0].rect.y + 25],
-                                              [x - 50, y - 50], 2, 0)
-                        fire = AnimatedFire(5, 4, shotgun_shot_0.rect.x, shotgun_shot_0.rect.y)
+                                              [x - 50, y - 50], 2, 0, -1)
                     else:
                         shot = Shot([our_tank[0].rect.x + 25, our_tank[0].rect.y + 25], [x, y],
-                                    our_tank[1].weapon_type, 0)
-                        fire = AnimatedFire(5, 4, shot.rect.x, shot.rect.y)
+                                    our_tank[1].weapon_type, 0, -1)
                     flag_gun = 1
                     flag_shot = False
 
@@ -566,44 +576,44 @@ while running:
             if not (all_vs_tanks[0][0].die or all_vs_tanks[0][1].die):
                 if all_vs_tanks[0][1].weapon_type == 2:
                     shotgun_shot_0 = Shot([all_vs_tanks[0][0].rect.x + 25,all_vs_tanks[0][0].rect.y + 25],
-                                          [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25], 2, 2)
+                                          [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25], 2, 2, 0)
                     shotgun_shot_1 = Shot([all_vs_tanks[0][0].rect.x + 25, all_vs_tanks[0][0].rect.y + 25],
-                                          [our_tank[0].rect.x + 75, our_tank[0].rect.y + 75], 2, 2)
+                                          [our_tank[0].rect.x + 75, our_tank[0].rect.y + 75], 2, 2, 0)
                     shotgun_shot_2 = Shot([all_vs_tanks[0][0].rect.x + 25, all_vs_tanks[0][0].rect.y + 25],
-                                          [our_tank[0].rect.x - 25, our_tank[0].rect.y - 25], 2, 2)
+                                          [our_tank[0].rect.x - 25, our_tank[0].rect.y - 25], 2, 2, 0)
                 else:
                     shot = Shot([all_vs_tanks[0][0].rect.x + 25, all_vs_tanks[0][0].rect.y + 25],
                                 [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25],
-                                all_vs_tanks[0][1].weapon_type, 2)
+                                all_vs_tanks[0][1].weapon_type, 2, 0)
 
             if not (all_vs_tanks[1][0].die or all_vs_tanks[1][1].die):
                 if all_vs_tanks[1][1].weapon_type == 2:
                     shotgun_shot_0 = Shot([all_vs_tanks[1][0].rect.x + 25,all_vs_tanks[1][0].rect.y + 25],
                                           [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25],
-                                          2, 2)
+                                          2, 2, 1)
                     shotgun_shot_1 = Shot([all_vs_tanks[1][0].rect.x + 25, all_vs_tanks[1][0].rect.y + 25],
                                           [our_tank[0].rect.x + 75, our_tank[0].rect.y + 75],
-                                          all_vs_tanks[0][1].weapon_type, 2)
+                                          all_vs_tanks[0][1].weapon_type, 2, 1)
                     shotgun_shot_2 = Shot([all_vs_tanks[1][0].rect.x + 25, all_vs_tanks[1][0].rect.y + 25],
                                           [our_tank[0].rect.x - 25, our_tank[0].rect.y - 25],
-                                          all_vs_tanks[0][1].weapon_type, 2)
+                                          all_vs_tanks[0][1].weapon_type, 2, 1)
                 else:
                     shot = Shot([all_vs_tanks[1][0].rect.x + 25, all_vs_tanks[1][0].rect.y + 25],
                                 [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25],
-                                all_vs_tanks[0][1].weapon_type, 2)
+                                all_vs_tanks[0][1].weapon_type, 2, 1)
 
             if not (all_vs_tanks[2][0].die or all_vs_tanks[2][1].die):
                 if all_vs_tanks[2][1].weapon_type == 2:
                     shotgun_shot_0 = Shot([all_vs_tanks[2][0].rect.x + 25, all_vs_tanks[2][0].rect.y + 25],
-                                          [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25], 2, 2)
+                                          [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25], 2, 2, 2)
                     shotgun_shot_1 = Shot([all_vs_tanks[2][0].rect.x + 25, all_vs_tanks[2][0].rect.y + 25],
-                                          [our_tank[0].rect.x + 75, our_tank[0].rect.y + 75], 2, 2)
-                    shotgun_shot_2 = Shot([all_vs_tanks[2][0].rect.x - 25, all_vs_tanks[2][0].rect.y - 25],
-                                          [our_tank[0].rect.x - 25, our_tank[0].rect.y - 25], 2, 2)
+                                          [our_tank[0].rect.x + 75, our_tank[0].rect.y + 75], 2, 2, 2)
+                    shotgun_shot_2 = Shot([all_vs_tanks[2][0].rect.x + 25, all_vs_tanks[2][0].rect.y + 25],
+                                          [our_tank[0].rect.x - 25, our_tank[0].rect.y - 25], 2, 2, 2)
                 else:
                     shot = Shot([all_vs_tanks[2][0].rect.x + 25, all_vs_tanks[2][0].rect.y + 25],
                                 [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25],
-                                all_vs_tanks[0][1].weapon_type, 2)
+                                all_vs_tanks[0][1].weapon_type, 2, 2)
             vs_tank_flag_shot = False
 
     if not vs_tank_flag_shot:
