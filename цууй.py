@@ -26,7 +26,12 @@ def draw_location(lvl):
         Border(300, 600, 320, 600)
         Border(600, 600, 620, 600)
     if lvl == 2:
-        Border(50, 50, 50, 500)
+        Border(5, 390, 450, 390)
+        Border(5, 410, 450, 410)
+        Border(450, 390, 450, 410)
+        Border(550, 390, 550, 410)
+        Border(550, 390, 995, 390)
+        Border(550, 410, 995, 410)
     if lvl == 3:
         pass
 
@@ -670,7 +675,7 @@ while running:
     all_sprite.update(1, 0, 1)
     all_sprite.update(our_tank[0].rect.x, our_tank[0].rect.y, 4)
     screen.fill((255, 255, 255))
-    draw_location(1)
+    draw_location(3)
     Border(5, 5, WIDTH - 5, 5)
     Border(5, HEIGHT - 5, WIDTH - 5, HEIGHT - 5)
     Border(5, 5, 5, HEIGHT - 5)
