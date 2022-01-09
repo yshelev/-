@@ -5,6 +5,31 @@ pygame.init()
 
 FPS = 50
 
+shots, destroyed_tanks = 0, 0
+def draw_location(lvl):
+    for i in vertical_borders:
+        i.kill()
+    for j in horizontal_borders:
+        i.kill()
+    Border(5, 5, WIDTH - 5, 5)
+    Border(5, HEIGHT - 5, WIDTH - 5, HEIGHT - 5)
+    Border(5, 5, 5, HEIGHT - 5)
+    Border(WIDTH - 5, 5, WIDTH - 5, HEIGHT - 5)
+    if lvl == 1:
+        Border(300, 5, 300, 600)
+        Border(320, 5, 320, 285)
+        Border(320, 305, 600, 305)
+        Border(320, 305, 320, 600)
+        Border(320, 285, 620, 325)
+        Border(600, 305, 600, 600)
+        Border(620, 285, 620, 600)
+        Border(300, 600, 320, 600)
+        Border(600, 600, 620, 600)
+    if lvl == 2:
+        Border(50, 50, 50, 500)
+    if lvl == 3:
+        pass
+
 
 def blitRotate(surf, image, pos, originPos, angle):
     w, h = image.get_size()
@@ -282,7 +307,7 @@ class Our_tank_gus(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-        self.hp = 9999999999999999999999999
+        self.hp = 3
         self.die = False
         self.can_move = True
         self.speed = 5
@@ -307,8 +332,8 @@ class Our_tank_gus(pygame.sprite.Sprite):
         self.rect = self.rect.move(x * self.speed, y * self.speed)
 
         if pygame.sprite.spritecollide(self, horizontal_borders, False) or \
-                pygame.sprite.spritecollide(self, vertical_borders, False) or \
-                pygame.sprite.spritecollide(self, all_vs_tanks_sprites, False):
+            pygame.sprite.spritecollide(self, vertical_borders, False) or \
+            pygame.sprite.spritecollide(self, all_vs_tanks_sprites, False):
             self.rect = pred_rect
             self.can_move = False
         else:
@@ -346,6 +371,7 @@ class Our_tank_gun(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
         self.speed = 5
+        self.can_move = True
         self.weapon_type = weapon_type
         self.die = False
         all_sprite.add(self)
@@ -477,9 +503,9 @@ y = 0
 start_pos_x, start_pos_y = 500, 500
 
 our_tank = (Our_tank_gus(start_pos_x, start_pos_y), Our_tank_gun(start_pos_x + 12, start_pos_y - 15, 0))
-vs_tank_0 = (VS_tank_gus(500, 10, 0), VS_tank_gun(512, 0, 0, 0))
-vs_tank_1 = (VS_tank_gus(600, 10, 1), VS_tank_gun(612, 0, 1, 1))
-vs_tank_2 = (VS_tank_gus(700, 10, 2), VS_tank_gun(712, 0, 2, 2))
+vs_tank_0 = (VS_tank_gus(10, 5, 0), VS_tank_gun(17, -10, 2, 0))
+vs_tank_1 = (VS_tank_gus(450, 5, 1), VS_tank_gun(462, -10, 2, 1))
+vs_tank_2 = (VS_tank_gus(800, 5, 2), VS_tank_gun(812, -10, 2, 2))
 all_vs_tanks = [vs_tank_0, vs_tank_1, vs_tank_2]
 
 Border(5, 5, WIDTH - 5, 5)
@@ -644,6 +670,7 @@ while running:
     all_sprite.update(1, 0, 1)
     all_sprite.update(our_tank[0].rect.x, our_tank[0].rect.y, 4)
     screen.fill((255, 255, 255))
+    draw_location(1)
     Border(5, 5, WIDTH - 5, 5)
     Border(5, HEIGHT - 5, WIDTH - 5, HEIGHT - 5)
     Border(5, 5, 5, HEIGHT - 5)
