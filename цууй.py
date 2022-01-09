@@ -85,6 +85,7 @@ class AnimatedFire(pygame.sprite.Sprite):
         self.cut_sheet(self.sheet, columns, rows)
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
+        self.image = pygame.transform.scale(self.image, (20, 20))
         self.count = 0
         self.rect = self.rect.move(x, y)
         self.speed = 5
