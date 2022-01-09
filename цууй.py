@@ -77,15 +77,14 @@ def start_screen():
         pygame.display.flip()
         clock.tick(FPS)
 
-class AnimatedFire(pygame.sprite.Sprite):
+class AnimatedSmoke(pygame.sprite.Sprite):
     def __init__(self, columns, rows, x, y, bool, number_of_tank, flag):
         super().__init__(all_sprite)
         self.frames = []
-        self.sheet = pygame.image.load('data/animated_fire.png')
+        self.sheet = pygame.image.load('data/animated_smoke.png')
         self.cut_sheet(self.sheet, columns, rows)
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
-        self.image = pygame.transform.scale(self.image, (20, 20))
         self.count = 0
         self.rect = self.rect.move(x, y)
         self.speed = 5
@@ -127,6 +126,36 @@ class AnimatedFire(pygame.sprite.Sprite):
                             self.kill()
                         elif not all_vs_tanks[self.number][0].can_move:
                             self.rect = pred_rect
+
+class AnimatedFire(pygame.sprite.Sprite):
+    def __init__(self, columns, rows, x, y):
+        super().__init__(all_sprite)
+        self.frames = []
+        self.sheet = pygame.image.load('data/animated_fire.png')
+        self.cut_sheet(self.sheet, columns, rows)
+        self.cur_frame = 0
+        self.image = self.frames[self.cur_frame]
+        self.image = pygame.transform.scale(self.image, (20, 20))
+        self.count = 0
+        self.rect = self.rect.move(x, y)
+        self.speed = 5
+
+    def cut_sheet(self, sheet, columns, rows):
+        self.rect = pygame.Rect(0, 0, self.sheet.get_width() // columns,
+                                self.sheet.get_height() // rows)
+        for j in range(rows):
+            for i in range(columns):
+                frame_location = (self.rect.w * i, self.rect.h * j)
+                self.frames.append(sheet.subsurface(pygame.Rect(
+                    frame_location, self.rect.size)))
+
+    def update(self, x, y, event_type):
+        self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+        self.image = self.frames[self.cur_frame]
+        self.image = pygame.transform.scale(self.image, (20, 20))
+        self.count += 1
+        if self.count == 20:
+            self.kill()
 
 
 class VS_tank_gun(pygame.sprite.Sprite):
@@ -401,7 +430,7 @@ class Shot(pygame.sprite.Sprite):
             self.count = 0
         all_sprite.add(self)
         all_shot.add(self)
-        fire = AnimatedFire(5, 4, self.rect.x, self.rect.y, self.whose_shot, self.number, True)
+        smoke = AnimatedSmoke(6, 5, self.rect.x, self.rect.y, self.whose_shot, self.number, True)
 
     def update(self, x, y, event_type):
         if event_type == 1:
@@ -418,7 +447,7 @@ class Shot(pygame.sprite.Sprite):
                     self.count += 1
                     if self.count == 3:
                         self.kill()
-                        fire = AnimatedFire(5, 4, self.rect.x, self.rect.y, self.whose_shot, 100, False)
+                        fire = AnimatedFire(5, 4, self.rect.x, self.rect.y)
                 elif pygame.sprite.spritecollideany(self, vertical_borders):
                     self.speed_x = -self.speed_x
                     self.angle = -self.angle
@@ -427,23 +456,23 @@ class Shot(pygame.sprite.Sprite):
                     self.whose_shot = 1
                     if self.count == 3:
                         self.kill()
-                        fire = AnimatedFire(5, 4, self.rect.x, self.rect.y, self.whose_shot, 100, False)
+                        fire = AnimatedFire(5, 4, self.rect.x, self.rect.y)
             elif self.type == 0:
                 self.rect = self.rect.move(self.speed_x, self.speed_y)
                 if pygame.sprite.spritecollideany(self, horizontal_borders):
                     self.kill()
-                    fire = AnimatedFire(5, 4, self.rect.x, self.rect.y, self.whose_shot, 100, False)
+                    fire = AnimatedFire(5, 4, self.rect.x, self.rect.y)
                 elif pygame.sprite.spritecollideany(self, vertical_borders):
                     self.kill()
-                    fire = AnimatedFire(5, 4, self.rect.x, self.rect.y, self.whose_shot, 100, False)
+                    fire = AnimatedFire(5, 4, self.rect.x, self.rect.y)
             elif self.type == 2:
                 self.rect = self.rect.move(self.speed_x, self.speed_y)
                 if pygame.sprite.spritecollideany(self, horizontal_borders):
                     self.kill()
-                    fire = AnimatedFire(5, 4, self.rect.x, self.rect.y, self.whose_shot, 100, False)
+                    fire = AnimatedFire(5, 4, self.rect.x, self.rect.y)
                 elif pygame.sprite.spritecollideany(self, vertical_borders):
                     self.kill()
-                    fire = AnimatedFire(5, 4, self.rect.x, self.rect.y, self.whose_shot, 100, False)
+                    fire = AnimatedFire(5, 4, self.rect.x, self.rect.y)
 
 
 pygame.display.set_caption('Pull up on the tank, и я еду в бой')
@@ -601,7 +630,7 @@ while running:
                 else:
                     shot = Shot([all_vs_tanks[1][0].rect.x + 25, all_vs_tanks[1][0].rect.y + 25],
                                 [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25],
-                                all_vs_tanks[0][1].weapon_type, 2, 1)
+                                all_vs_tanks[1][1].weapon_type, 2, 1)
 
             if not (all_vs_tanks[2][0].die or all_vs_tanks[2][1].die):
                 if all_vs_tanks[2][1].weapon_type == 2:
@@ -614,7 +643,7 @@ while running:
                 else:
                     shot = Shot([all_vs_tanks[2][0].rect.x + 25, all_vs_tanks[2][0].rect.y + 25],
                                 [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25],
-                                all_vs_tanks[0][1].weapon_type, 2, 2)
+                                all_vs_tanks[2][1].weapon_type, 2, 2)
             vs_tank_flag_shot = False
 
     if not vs_tank_flag_shot:
@@ -624,6 +653,7 @@ while running:
         else:
             vs_tank_count_shot += 1
     all_sprite.update(1, 0, 1)
+    all_sprite.update(0, 0, 4)
     screen.fill((255, 255, 255))
     draw_normal_name(screen)
     draw_hp(screen)
