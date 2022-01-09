@@ -107,25 +107,8 @@ class AnimatedSmoke(pygame.sprite.Sprite):
             self.image = self.frames[self.cur_frame]
             self.image = pygame.transform.scale(self.image, (20, 20))
             self.count += 1
-            if self.count == 20:
+            if self.count == 30:
                 self.kill()
-        if event_type == 0:
-            if self.bool != 2:
-                if self.flag:
-                    pred_rect = self.rect.move(0, 0)
-                    self.rect = self.rect.move(x * self.speed, y * self.speed)
-                    if not our_tank[0].can_move:
-                        self.rect = pred_rect
-        if event_type == 3:
-            if self.bool == 2:
-                if self.flag:
-                    pred_rect = self.rect.move(0, 0)
-                    self.rect = self.rect.move(x * self.speed, y * self.speed)
-                    if self.number in range(0, 3):
-                        if all_vs_tanks[self.number][0].die:
-                            self.kill()
-                        elif not all_vs_tanks[self.number][0].can_move:
-                            self.rect = pred_rect
 
 class AnimatedFire(pygame.sprite.Sprite):
     def __init__(self, columns, rows, x, y):
@@ -205,7 +188,7 @@ class VS_tank_gun(pygame.sprite.Sprite):
                 angle = acos(delta_x / long) * (1 if delta_y > 0 else -1)
             except ZeroDivisionError:
                 angle = acos(delta_x / 1) * (1 if delta_y > 0 else -1)
-            self.image, self.rect = rot_center(self.image_start_gun, self.rect, -angle * 57 + 90)
+            self.image, self.rect = rot_center(self.image_start_gun, self.rect, -angle * 57 - 90)
 
 
 class VS_tank_gus(pygame.sprite.Sprite):
@@ -488,6 +471,9 @@ all_our_tanks_sprite = pygame.sprite.Group()
 clock = pygame.time.Clock()
 running = True
 
+size = 10
+y = 0
+
 start_pos_x, start_pos_y = 500, 500
 
 our_tank = (Our_tank_gus(start_pos_x, start_pos_y), Our_tank_gun(start_pos_x + 12, start_pos_y - 15, 0))
@@ -496,12 +482,16 @@ vs_tank_1 = (VS_tank_gus(600, 10, 1), VS_tank_gun(612, 0, 1, 1))
 vs_tank_2 = (VS_tank_gus(700, 10, 2), VS_tank_gun(712, 0, 2, 2))
 all_vs_tanks = [vs_tank_0, vs_tank_1, vs_tank_2]
 
-start_screen()
-
 Border(5, 5, WIDTH - 5, 5)
 Border(5, HEIGHT - 5, WIDTH - 5, HEIGHT - 5)
-Border(5, 5, 5, HEIGHT- 5)
+Border(5, 5, 5, HEIGHT - 5)
 Border(WIDTH - 5, 5, WIDTH - 5, HEIGHT - 5)
+with open('loc.txt', 'r') as f:
+    loc = f.read().split('\n')
+
+loc = [list(i) for i in loc]
+
+start_screen()
 
 flag_gun = 0
 
@@ -538,14 +528,13 @@ while running:
                     flag_shot = False
 
     if not flag_shot:
-        if count_shot == 10:
+        if count_shot == 30:
             flag_shot = True
             count_shot = 0
         else:
             count_shot += 1
     if flag_gun:
         all_sprite.update(x, y, 2)
-        flag_gun = 0
     keys = pygame.key.get_pressed()
     if keys[pygame.K_SPACE]:
         if not flag_change:
@@ -647,14 +636,20 @@ while running:
             vs_tank_flag_shot = False
 
     if not vs_tank_flag_shot:
-        if vs_tank_count_shot == 20:
+        if vs_tank_count_shot == 40:
             vs_tank_flag_shot = True
             vs_tank_count_shot = 0
         else:
             vs_tank_count_shot += 1
     all_sprite.update(1, 0, 1)
-    all_sprite.update(0, 0, 4)
+    all_sprite.update(our_tank[0].rect.x, our_tank[0].rect.y, 4)
     screen.fill((255, 255, 255))
+    Border(5, 5, WIDTH - 5, 5)
+    Border(5, HEIGHT - 5, WIDTH - 5, HEIGHT - 5)
+    Border(5, 5, 5, HEIGHT - 5)
+    Border(WIDTH - 5, 5, WIDTH - 5, HEIGHT - 5)
+
+    count_for_tanks = 0
     draw_normal_name(screen)
     draw_hp(screen)
     all_sprite.draw(screen)
