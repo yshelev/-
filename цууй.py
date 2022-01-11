@@ -7,10 +7,15 @@ FPS = 50
 
 
 def finish_screen():
-    intro_text = ["спасибо за прохождение игры!!!!!!!!!!!!!!!!!!!!!!"
-                  'что то типо чмоки чмоки?']
+    with open('info.txt', 'w') as f:
+        f.write(str(lose))
+        f.write(str(defeated_tanks))
+        f.write(str(all_shots))
+    with open('info.txt', 'r') as f:
+        print(f.read())
+    intro_text = ["спасибо за прохождение игры!!!!!!!!!!!!!!!!!!!!!!"]
 
-    fon = pygame.image.load('data/fon.jpg')
+    fon = pygame.image.load('data/end_fon.jpg')
     fon1 = pygame.transform.scale(fon, (WIDTH, HEIGHT))
     screen.blit(fon1, (0, 0))
     font = pygame.font.Font(None, 30)
@@ -109,10 +114,10 @@ def draw_hp(scr):
 def start_screen():
     intro_text = ["ЗАСТАВКА", "",
                   "Правила игры",
-                  "Если вы не будете уважать пуджа,",
-                  "он вам накидает"]
+                  "вы стреляете, убиваете с 1,",
+                  "в вас надо попасть трижды"]
 
-    fon = pygame.image.load('data/fon.jpg')
+    fon = pygame.image.load('data/start_fon.jpg')
     fon1 = pygame.transform.scale(fon, (WIDTH, HEIGHT))
     screen.blit(fon1, (0, 0))
     font = pygame.font.Font(None, 30)
@@ -551,8 +556,7 @@ Border(5, 5, WIDTH - 5, 5)
 Border(5, HEIGHT - 5, WIDTH - 5, HEIGHT - 5)
 Border(5, 5, 5, HEIGHT - 5)
 Border(WIDTH - 5, 5, WIDTH - 5, HEIGHT - 5)
-with open('loc.txt', 'r') as f:
-    loc = f.read().split('\n')
+
 
 start_screen()
 
@@ -562,7 +566,6 @@ flag_shot = True
 count_shot = 0
 
 lose, defeated_tanks, all_shots = 0, 0, 0
-info_about_match = [lose, defeated_tanks, all_shots]
 
 
 flag_change = 0
@@ -728,9 +731,8 @@ while running:
                 i.kill()
         if lvl == 3:
             finish_screen()
+
             pygame.quit()
-            for info in info_about_match:
-                print(info)
         lvl += 1
         our_tank = (Our_tank_gus(start_pos_x, start_pos_y), Our_tank_gun(start_pos_x + 12, start_pos_y - 15, 0))
         vs_tank_0 = (VS_tank_gus(10, 5, 0), VS_tank_gun(17, -10, 2, 0))
@@ -754,5 +756,3 @@ while running:
     pygame.display.flip()
 
 pygame.quit()
-for info in info_about_match:
-    print(info)
