@@ -5,12 +5,41 @@ pygame.init()
 
 FPS = 50
 
-shots, destroyed_tanks = 0, 0
+
+def finish_screen():
+    intro_text = ["спасибо за прохождение игры!!!!!!!!!!!!!!!!!!!!!!"
+                  'что то типо чмоки чмоки?']
+
+    fon = pygame.image.load('data/fon.jpg')
+    fon1 = pygame.transform.scale(fon, (WIDTH, HEIGHT))
+    screen.blit(fon1, (0, 0))
+    font = pygame.font.Font(None, 30)
+    text_coord = 50
+    for line in intro_text:
+        string_rendered = font.render(line, 1, pygame.Color('black'))
+        intro_rect = string_rendered.get_rect()
+        text_coord += 10
+        intro_rect.top = text_coord
+        intro_rect.x = 10
+        text_coord += intro_rect.height
+        screen.blit(string_rendered, intro_rect)
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.KEYDOWN or \
+                    event.type == pygame.MOUSEBUTTONDOWN:
+                terminate()
+        pygame.display.flip()
+        clock.tick(FPS)
+
+
 def draw_location(lvl):
     for i in vertical_borders:
         i.kill()
     for j in horizontal_borders:
-        i.kill()
+        j.kill()
     Border(5, 5, WIDTH - 5, 5)
     Border(5, HEIGHT - 5, WIDTH - 5, HEIGHT - 5)
     Border(5, 5, 5, HEIGHT - 5)
@@ -223,6 +252,7 @@ class VS_tank_gun(pygame.sprite.Sprite):
 
 class VS_tank_gus(pygame.sprite.Sprite):
     def __init__(self, x, y, number):
+        global defeated_tanks
         super().__init__(all_sprite)
         self.image = pygame.image.load('data/tank_gus.jpg')
         self.image_start_gus = pygame.image.load('data/tank_gus.jpg')
@@ -245,6 +275,7 @@ class VS_tank_gus(pygame.sprite.Sprite):
     def update(self, x, y, event_type):
         if pygame.sprite.spritecollide(self, all_shot, False):
             if pygame.sprite.spritecollide(self, all_shot, False)[0].whose_shot != 2:
+                defeated_tanks += 1
                 pygame.sprite.spritecollide(self, all_shot, True)
                 pygame.sprite.spritecollide(self, all_vs_tanks_sprites, False)[1].kill()
                 self.die = True
@@ -413,6 +444,9 @@ class Our_tank_gun(pygame.sprite.Sprite):
 class Shot(pygame.sprite.Sprite):
     def __init__(self, coord, target, type, bool, number):
         super().__init__(all_sprite)
+        global all_shots
+        if number == -1:
+            all_shots += 1
         self.image = pygame.image.load('data/пуля.jpg')
         self.image_start_patr = pygame.image.load('data/пуля.jpg')
         self.image = pygame.transform.scale(self.image
@@ -504,7 +538,7 @@ running = True
 
 size = 10
 y = 0
-
+lvl = 1
 start_pos_x, start_pos_y = 500, 500
 
 our_tank = (Our_tank_gus(start_pos_x, start_pos_y), Our_tank_gun(start_pos_x + 12, start_pos_y - 15, 0))
@@ -520,14 +554,16 @@ Border(WIDTH - 5, 5, WIDTH - 5, HEIGHT - 5)
 with open('loc.txt', 'r') as f:
     loc = f.read().split('\n')
 
-loc = [list(i) for i in loc]
-
 start_screen()
 
 flag_gun = 0
 
 flag_shot = True
 count_shot = 0
+
+lose, defeated_tanks, all_shots = 0, 0, 0
+info_about_match = [lose, defeated_tanks, all_shots]
+
 
 flag_change = 0
 count_change = 0
@@ -672,10 +708,39 @@ while running:
             vs_tank_count_shot = 0
         else:
             vs_tank_count_shot += 1
+    if not all_vs_tanks_sprites:
+        if all_sprite:
+            for i in all_sprite:
+                i.kill()
+        if lvl == 3:
+            finish_screen()
+            pygame.quit()
+        lvl += 1
+        our_tank = (Our_tank_gus(start_pos_x, start_pos_y), Our_tank_gun(start_pos_x + 12, start_pos_y - 15, 0))
+        vs_tank_0 = (VS_tank_gus(10, 5, 0), VS_tank_gun(17, -10, 2, 0))
+        vs_tank_1 = (VS_tank_gus(450, 5, 1), VS_tank_gun(462, -10, 2, 1))
+        vs_tank_2 = (VS_tank_gus(800, 5, 2), VS_tank_gun(812, -10, 2, 2))
+        all_vs_tanks = [vs_tank_0, vs_tank_1, vs_tank_2]
+    if not all_our_tanks_sprite:
+        lose += 1
+        if all_sprite:
+            for i in all_sprite:
+                i.kill()
+        if lvl == 3:
+            finish_screen()
+            pygame.quit()
+            for info in info_about_match:
+                print(info)
+        lvl += 1
+        our_tank = (Our_tank_gus(start_pos_x, start_pos_y), Our_tank_gun(start_pos_x + 12, start_pos_y - 15, 0))
+        vs_tank_0 = (VS_tank_gus(10, 5, 0), VS_tank_gun(17, -10, 2, 0))
+        vs_tank_1 = (VS_tank_gus(450, 5, 1), VS_tank_gun(462, -10, 2, 1))
+        vs_tank_2 = (VS_tank_gus(800, 5, 2), VS_tank_gun(812, -10, 2, 2))
+        all_vs_tanks = [vs_tank_0, vs_tank_1, vs_tank_2]
     all_sprite.update(1, 0, 1)
     all_sprite.update(our_tank[0].rect.x, our_tank[0].rect.y, 4)
     screen.fill((255, 255, 255))
-    draw_location(3)
+    draw_location(lvl)
     Border(5, 5, WIDTH - 5, 5)
     Border(5, HEIGHT - 5, WIDTH - 5, HEIGHT - 5)
     Border(5, 5, 5, HEIGHT - 5)
@@ -689,3 +754,5 @@ while running:
     pygame.display.flip()
 
 pygame.quit()
+for info in info_about_match:
+    print(info)
