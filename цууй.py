@@ -9,7 +9,9 @@ FPS = 50
 def finish_screen():
     with open('info.txt', 'w') as f:
         f.write(str(lose))
+        f.write('\n')
         f.write(str(defeated_tanks))
+        f.write('\n')
         f.write(str(all_shots))
     with open('info.txt', 'r') as f:
         print(f.read())
@@ -228,8 +230,10 @@ class VS_tank_gun(pygame.sprite.Sprite):
         all_vs_tanks_sprites.add(self)
 
     def update(self, x, y, event_type):
+        global defeated_tanks
         if pygame.sprite.spritecollide(self, all_shot, False):
             if pygame.sprite.spritecollide(self, all_shot, False)[0].whose_shot != 2:
+                defeated_tanks += 1
                 pygame.sprite.spritecollide(self, all_shot, True)
                 self.die = True
                 pygame.sprite.spritecollide(self, all_vs_tanks_sprites, False)[0].kill()
@@ -257,7 +261,6 @@ class VS_tank_gun(pygame.sprite.Sprite):
 
 class VS_tank_gus(pygame.sprite.Sprite):
     def __init__(self, x, y, number):
-        global defeated_tanks
         super().__init__(all_sprite)
         self.image = pygame.image.load('data/tank_gus.jpg')
         self.image_start_gus = pygame.image.load('data/tank_gus.jpg')
@@ -278,6 +281,7 @@ class VS_tank_gus(pygame.sprite.Sprite):
         all_vs_tanks_sprites.add(self)
 
     def update(self, x, y, event_type):
+        global defeated_tanks
         if pygame.sprite.spritecollide(self, all_shot, False):
             if pygame.sprite.spritecollide(self, all_shot, False)[0].whose_shot != 2:
                 defeated_tanks += 1
