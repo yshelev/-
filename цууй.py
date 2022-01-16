@@ -244,13 +244,13 @@ class VS_tank_gun(pygame.sprite.Sprite):
                 self.kill()
                 all_vs_tanks[self.number][0].kill()
 
-        if event_type == 3:
+        if event_type == 3 + self.number:
             pred_rect = self.rect.move(0, 0)
             self.rect = self.rect.move(x * self.speed, y * self.speed)
             if not all_vs_tanks[self.number][0].can_move:
                 self.rect = pred_rect
 
-        if event_type == 4:
+        if event_type == 6:
             coord = [self.rect.x, self.rect.y]
             target = [x, y]
             delta_x = coord[0] + 13 - target[0]
@@ -275,6 +275,8 @@ class VS_tank_gus(pygame.sprite.Sprite):
         colorkey = self.image.get_at((0, 0))
         self.image.set_colorkey(colorkey)
         self.rect = self.image.get_rect()
+        self.start_pos_x = x
+        self.start_pos_y = y
         self.rect.x = x
         self.rect.y = y
         self.die = False
@@ -295,7 +297,7 @@ class VS_tank_gus(pygame.sprite.Sprite):
                 self.kill()
                 all_vs_tanks[self.number][1].kill()
 
-        if event_type == 3:
+        if event_type == 3 + self.number:
             self.move(x, y)
             self.rotate(x, y)
 
@@ -750,7 +752,7 @@ while running:
         vs_tank_2 = (VS_tank_gus(800, 5, 2), VS_tank_gun(812, -10, 2, 2))
         all_vs_tanks = [vs_tank_0, vs_tank_1, vs_tank_2]
     all_sprite.update(1, 0, 1)
-    all_sprite.update(our_tank[0].rect.x, our_tank[0].rect.y, 4)
+    all_sprite.update(our_tank[0].rect.x, our_tank[0].rect.y, 6)
     screen.fill((255, 255, 255))
     draw_location(lvl)
     Border(5, 5, WIDTH - 5, 5)
