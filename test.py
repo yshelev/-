@@ -706,57 +706,53 @@ while running:
     all_sprite.update(move_x_1, move_y_1, 4)
     all_sprite.update(move_x_2, move_y_2, 5)
 
-    if vs_tank_flag_shot:
-        if not (our_tank[1].die or our_tank[0].die):
-            if not (all_vs_tanks[0][0].die or all_vs_tanks[0][1].die):
-                if all_vs_tanks[0][1].weapon_type == 2:
-                    shotgun_shot_0 = Shot([all_vs_tanks[0][0].rect.x + 25,all_vs_tanks[0][0].rect.y + 25],
-                                          [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25], 2, 2, 0)
-                    shotgun_shot_1 = Shot([all_vs_tanks[0][0].rect.x + 25, all_vs_tanks[0][0].rect.y + 25],
-                                          [our_tank[0].rect.x + 75, our_tank[0].rect.y + 75], 2, 2, 0)
-                    shotgun_shot_2 = Shot([all_vs_tanks[0][0].rect.x + 25, all_vs_tanks[0][0].rect.y + 25],
-                                          [our_tank[0].rect.x - 25, our_tank[0].rect.y - 25], 2, 2, 0)
-                else:
-                    shot = Shot([all_vs_tanks[0][0].rect.x + 25, all_vs_tanks[0][0].rect.y + 25],
-                                [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25],
-                                all_vs_tanks[0][1].weapon_type, 2, 0)
+    if not (our_tank[1].die or our_tank[0].die):
+        if not (all_vs_tanks[0][0].die or all_vs_tanks[0][1].die) and vs_tank_count_shot == 10:
+            if all_vs_tanks[0][1].weapon_type == 2:
+                shotgun_shot_0 = Shot([all_vs_tanks[0][0].rect.x + 25,all_vs_tanks[0][0].rect.y + 25],
+                                      [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25], 2, 2, 0)
+                shotgun_shot_1 = Shot([all_vs_tanks[0][0].rect.x + 25, all_vs_tanks[0][0].rect.y + 25],
+                                      [our_tank[0].rect.x + 75, our_tank[0].rect.y + 75], 2, 2, 0)
+                shotgun_shot_2 = Shot([all_vs_tanks[0][0].rect.x + 25, all_vs_tanks[0][0].rect.y + 25],
+                                      [our_tank[0].rect.x - 25, our_tank[0].rect.y - 25], 2, 2, 0)
+            else:
+                shot = Shot([all_vs_tanks[0][0].rect.x + 25, all_vs_tanks[0][0].rect.y + 25],
+                            [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25],
+                            all_vs_tanks[0][1].weapon_type, 2, 0)
 
-            if not (all_vs_tanks[1][0].die or all_vs_tanks[1][1].die):
-                if all_vs_tanks[1][1].weapon_type == 2:
-                    shotgun_shot_0 = Shot([all_vs_tanks[1][0].rect.x + 25,all_vs_tanks[1][0].rect.y + 25],
-                                          [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25],
-                                          2, 2, 1)
-                    shotgun_shot_1 = Shot([all_vs_tanks[1][0].rect.x + 25, all_vs_tanks[1][0].rect.y + 25],
-                                          [our_tank[0].rect.x + 75, our_tank[0].rect.y + 75],
-                                          all_vs_tanks[0][1].weapon_type, 2, 1)
-                    shotgun_shot_2 = Shot([all_vs_tanks[1][0].rect.x + 25, all_vs_tanks[1][0].rect.y + 25],
-                                          [our_tank[0].rect.x - 25, our_tank[0].rect.y - 25],
-                                          all_vs_tanks[0][1].weapon_type, 2, 1)
-                else:
-                    shot = Shot([all_vs_tanks[1][0].rect.x + 25, all_vs_tanks[1][0].rect.y + 25],
-                                [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25],
-                                all_vs_tanks[1][1].weapon_type, 2, 1)
+        if not (all_vs_tanks[1][0].die or all_vs_tanks[1][1].die) and vs_tank_count_shot == 20:
+            if all_vs_tanks[1][1].weapon_type == 2:
+                shotgun_shot_0 = Shot([all_vs_tanks[1][0].rect.x + 25,all_vs_tanks[1][0].rect.y + 25],
+                                      [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25],
+                                      2, 2, 1)
+                shotgun_shot_1 = Shot([all_vs_tanks[1][0].rect.x + 25, all_vs_tanks[1][0].rect.y + 25],
+                                      [our_tank[0].rect.x + 75, our_tank[0].rect.y + 75],
+                                      all_vs_tanks[0][1].weapon_type, 2, 1)
+                shotgun_shot_2 = Shot([all_vs_tanks[1][0].rect.x + 25, all_vs_tanks[1][0].rect.y + 25],
+                                      [our_tank[0].rect.x - 25, our_tank[0].rect.y - 25],
+                                      all_vs_tanks[0][1].weapon_type, 2, 1)
+            else:
+                shot = Shot([all_vs_tanks[1][0].rect.x + 25, all_vs_tanks[1][0].rect.y + 25],
+                            [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25],
+                            all_vs_tanks[1][1].weapon_type, 2, 1)
 
-            if not (all_vs_tanks[2][0].die or all_vs_tanks[2][1].die):
-                if all_vs_tanks[2][1].weapon_type == 2:
-                    shotgun_shot_0 = Shot([all_vs_tanks[2][0].rect.x + 25, all_vs_tanks[2][0].rect.y + 25],
-                                          [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25], 2, 2, 2)
-                    shotgun_shot_1 = Shot([all_vs_tanks[2][0].rect.x + 25, all_vs_tanks[2][0].rect.y + 25],
-                                          [our_tank[0].rect.x + 75, our_tank[0].rect.y + 75], 2, 2, 2)
-                    shotgun_shot_2 = Shot([all_vs_tanks[2][0].rect.x + 25, all_vs_tanks[2][0].rect.y + 25],
-                                          [our_tank[0].rect.x - 25, our_tank[0].rect.y - 25], 2, 2, 2)
-                else:
-                    shot = Shot([all_vs_tanks[2][0].rect.x + 25, all_vs_tanks[2][0].rect.y + 25],
-                                [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25],
-                                all_vs_tanks[2][1].weapon_type, 2, 2)
-            vs_tank_flag_shot = False
+        if not (all_vs_tanks[2][0].die or all_vs_tanks[2][1].die) and vs_tank_count_shot == 30:
+            if all_vs_tanks[2][1].weapon_type == 2:
+                shotgun_shot_0 = Shot([all_vs_tanks[2][0].rect.x + 25, all_vs_tanks[2][0].rect.y + 25],
+                                      [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25], 2, 2, 2)
+                shotgun_shot_1 = Shot([all_vs_tanks[2][0].rect.x + 25, all_vs_tanks[2][0].rect.y + 25],
+                                      [our_tank[0].rect.x + 75, our_tank[0].rect.y + 75], 2, 2, 2)
+                shotgun_shot_2 = Shot([all_vs_tanks[2][0].rect.x + 25, all_vs_tanks[2][0].rect.y + 25],
+                                      [our_tank[0].rect.x - 25, our_tank[0].rect.y - 25], 2, 2, 2)
+            else:
+                shot = Shot([all_vs_tanks[2][0].rect.x + 25, all_vs_tanks[2][0].rect.y + 25],
+                            [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25],
+                            all_vs_tanks[2][1].weapon_type, 2, 2)
 
-    if not vs_tank_flag_shot:
-        if vs_tank_count_shot == 40:
-            vs_tank_flag_shot = True
-            vs_tank_count_shot = 0
-        else:
-            vs_tank_count_shot += 1
+    if vs_tank_count_shot == 40:
+        vs_tank_count_shot = 0
+    else:
+        vs_tank_count_shot += 1
     if not all_vs_tanks_sprites:
         if all_sprite:
             for i in all_sprite:
