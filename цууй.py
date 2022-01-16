@@ -8,14 +8,18 @@ FPS = 50
 
 def finish_screen():
     with open('info.txt', 'w') as f:
-        f.write(str(lose))
-        f.write('\n')
-        f.write(str(defeated_tanks))
-        f.write('\n')
-        f.write(str(all_shots))
-    with open('info.txt', 'r') as f:
-        print(f.read())
-    intro_text = ["спасибо за прохождение игры!!!!!!!!!!!!!!!!!!!!!!"]
+        f.write('number of deaths: ' + str(lose) + "\n")
+        f.write('number of destroyed tanks: ' + str(defeated_tanks) + "\n")
+        f.write('total shots fired: ' + str(all_shots) + "\n")
+    result = defeated_tanks * 4 - all_shots - lose * 9 - losed_hp * 3
+    if result <= 0:
+        intro_text = ["к сожалению, вы проиграли, но достойно сражались!",
+                      "спасибо за игру"
+                      'ваш результат: ' + result]
+    else:
+        intro_text = ['вы победили!',
+                      'спасибо за игру!!',
+                      'ваш результат: ' + result]
 
     fon = pygame.image.load('data/end_fon.jpg')
     fon1 = pygame.transform.scale(fon, (WIDTH, HEIGHT))
@@ -360,10 +364,12 @@ class Our_tank_gus(pygame.sprite.Sprite):
         all_our_tanks_sprite.add(self)
 
     def update(self, x, y, event_type):
+        global losed_hp
         if pygame.sprite.spritecollide(self, all_shot, False):
             if pygame.sprite.spritecollide(self, all_shot, False)[0].whose_shot != 0:
                 pygame.sprite.spritecollide(self, all_shot, True)
                 self.hp -= 1
+                losed_hp += 1
                 if not self.hp:
                     self.die = True
                     our_tank[1].kill()
@@ -423,10 +429,12 @@ class Our_tank_gun(pygame.sprite.Sprite):
         all_our_tanks_sprite.add(self)
 
     def update(self, x, y, event_type):
+        global losed_hp
         if pygame.sprite.spritecollide(self, all_shot, False):
             if pygame.sprite.spritecollide(self, all_shot, False)[0].whose_shot != 0:
                 pygame.sprite.spritecollide(self, all_shot, True)
                 our_tank[0].hp -= 1
+                losed_hp += 1
                 if not our_tank[0].hp:
                     self.die = True
                     our_tank[0].kill()
@@ -453,9 +461,6 @@ class Our_tank_gun(pygame.sprite.Sprite):
 class Shot(pygame.sprite.Sprite):
     def __init__(self, coord, target, type, bool, number):
         super().__init__(all_sprite)
-        global all_shots
-        if number == -1:
-            all_shots += 1
         self.image = pygame.image.load('data/пуля.jpg')
         self.image_start_patr = pygame.image.load('data/пуля.jpg')
         self.image = pygame.transform.scale(self.image
@@ -569,7 +574,7 @@ flag_gun = 0
 flag_shot = True
 count_shot = 0
 
-lose, defeated_tanks, all_shots = 0, 0, 0
+lose, defeated_tanks, all_shots, losed_hp = 0, 0, 0, 0
 
 
 flag_change = 0
@@ -588,6 +593,7 @@ while running:
             x, y = event.pos
             if flag_shot:
                 if not our_tank[1].die:
+                    all_shots += 1
                     if our_tank[1].weapon_type == 2:
                         shotgun_shot_0 = Shot([our_tank[0].rect.x + 25, our_tank[0].rect.y + 25],
                                               [x, y], 2, 0, -1)
