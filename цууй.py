@@ -281,6 +281,7 @@ class VS_tank_gus(pygame.sprite.Sprite):
         self.rect.y = y
         self.die = False
         self.can_move = True
+        self.move_to_coord = True
         self.number = number
         self.speed = 5
         all_sprite.add(self)
@@ -558,9 +559,9 @@ lvl = 1
 start_pos_x, start_pos_y = 500, 500
 
 our_tank = (Our_tank_gus(start_pos_x, start_pos_y), Our_tank_gun(start_pos_x + 12, start_pos_y - 15, 0))
-vs_tank_0 = (VS_tank_gus(10, 5, 0), VS_tank_gun(17, -10, 2, 0))
-vs_tank_1 = (VS_tank_gus(450, 5, 1), VS_tank_gun(462, -10, 2, 1))
-vs_tank_2 = (VS_tank_gus(800, 5, 2), VS_tank_gun(812, -10, 2, 2))
+vs_tank_0 = (VS_tank_gus(10, 20, 0), VS_tank_gun(17, 5, 2, 0))
+vs_tank_1 = (VS_tank_gus(450, 20, 1), VS_tank_gun(462, 5, 2, 1))
+vs_tank_2 = (VS_tank_gus(800, 20, 2), VS_tank_gun(812, 5, 2, 2))
 all_vs_tanks = [vs_tank_0, vs_tank_1, vs_tank_2]
 
 Border(5, 5, WIDTH - 5, 5)
@@ -577,7 +578,12 @@ flag_shot = True
 count_shot = 0
 
 lose, defeated_tanks, all_shots, losed_hp = 0, 0, 0, 0
-
+coord_to_move = {0: [random.randint(all_vs_tanks[0][0].start_pos_x - 100, all_vs_tanks[0][0].start_pos_x + 100),
+                     random.randint(all_vs_tanks[0][0].start_pos_y - 100, all_vs_tanks[0][0].start_pos_y + 100)],
+                 1: [random.randint(all_vs_tanks[1][0].start_pos_x - 100, all_vs_tanks[1][0].start_pos_x + 100),
+                     random.randint(all_vs_tanks[1][0].start_pos_y - 100, all_vs_tanks[1][0].start_pos_y + 100)],
+                 2: [random.randint(all_vs_tanks[2][0].start_pos_x - 100, all_vs_tanks[2][0].start_pos_x + 100),
+                     random.randint(all_vs_tanks[2][0].start_pos_y - 100, all_vs_tanks[2][0].start_pos_y + 100)]}
 
 flag_change = 0
 count_change = 0
@@ -640,37 +646,65 @@ while running:
     elif keys[pygame.K_d]:
         all_sprite.update(1, 0, 0)
 
-    if count_move_vs_tank == 0:
-        move_vs_tank_x, move_vs_tank_y = random.randint(-10, 10), random.randint(-10, 10)
-        heads_and_tails = random.randint(0, 1)
-        if heads_and_tails:
-            if move_vs_tank_x < 0:
-                move_x = -1
-                count_move_vs_tank = move_vs_tank_x
-            elif move_vs_tank_x == 0:
-                move_x = 0
-                count_move_vs_tank = move_vs_tank_x
-            else:
-                move_x = 1
-                count_move_vs_tank = move_vs_tank_x
-            move_y = 0
-        else:
-            if move_vs_tank_y < 0:
-                move_y = -1
-                count_move_vs_tank = move_vs_tank_x
-            elif move_vs_tank_y == 0:
-                move_y = 0
-                count_move_vs_tank = move_vs_tank_x
-            else:
-                move_y = 1
-                count_move_vs_tank = move_vs_tank_x
-            move_x = 0
 
-    all_sprite.update(move_x, move_y, 3)
-    if count_move_vs_tank < 0:
-        count_move_vs_tank += 1
-    else:
-        count_move_vs_tank -= 1
+    for i in range(3):
+        if not all_vs_tanks[i][0].move_to_coord:
+            if all_vs_tanks[i][0].start_pos_x - 20 <= all_vs_tanks[i][0].rect.x <= all_vs_tanks[i][0].start_pos_x + 20 \
+                    and \
+            all_vs_tanks[i][0].start_pos_y - 20 <= all_vs_tanks[i][0].rect.y <= all_vs_tanks[i][0].start_pos_y + 20:
+                all_vs_tanks[i][0].move_to_coord = True
+                coord_to_move[i] = [random.randint(all_vs_tanks[i][0].start_pos_x - 100,
+                                                   all_vs_tanks[i][0].start_pos_x + 100),
+                                    random.randint(all_vs_tanks[i][0].start_pos_y - 100,
+                                                   all_vs_tanks[i][0].start_pos_y + 100)]
+            else:
+                if all_vs_tanks[i][0].start_pos_x - 20 <= all_vs_tanks[i][0].rect.x <= all_vs_tanks[i][0].start_pos_x + 20:
+                    if all_vs_tanks[i][0].start_pos_y < all_vs_tanks[i][0].rect.y:
+                        move_x, move_y = 0, -1
+                    elif all_vs_tanks[i][0].start_pos_y > all_vs_tanks[i][0].rect.y:
+                        move_x, move_y = 0, 1
+                else:
+                    if all_vs_tanks[i][0].start_pos_x < all_vs_tanks[i][0].rect.x:
+                        move_x, move_y = -1, 0
+                    if all_vs_tanks[i][0].start_pos_x > all_vs_tanks[i][0].rect.x:
+                        move_x, move_y = 1, 0
+
+        else:
+            if coord_to_move[i][0] - 20 <= all_vs_tanks[i][0].rect.x <= coord_to_move[i][0] + 20 and\
+                coord_to_move[i][1] - 20 <= all_vs_tanks[i][0].rect.y <= coord_to_move[i][1] + 20:
+                all_vs_tanks[i][0].move_to_coord = False
+                coord_to_move[i] = [random.randint(all_vs_tanks[i][0].start_pos_x - 100,
+                                                   all_vs_tanks[i][0].start_pos_x + 100),
+                                    random.randint(all_vs_tanks[i][0].start_pos_y - 100,
+                                                   all_vs_tanks[i][0].start_pos_y + 100)]
+            else:
+                print(coord_to_move[i][0], all_vs_tanks[i][0].rect.x, i)
+                print(coord_to_move[i][1], all_vs_tanks[i][0].rect.y, i)
+                if not all_vs_tanks[i][0].can_move:
+                    coord_to_move[i] = [random.randint(all_vs_tanks[i][0].start_pos_x - 100,
+                                                       all_vs_tanks[i][0].start_pos_x + 100),
+                                        random.randint(all_vs_tanks[i][0].start_pos_y - 100,
+                                                       all_vs_tanks[i][0].start_pos_y + 100)]
+                if coord_to_move[i][0] - 20 <= all_vs_tanks[i][0].rect.x <= coord_to_move[i][0] + 20:
+                    if coord_to_move[i][1] < all_vs_tanks[i][0].rect.y:
+                        move_x, move_y = 0, -1
+                    elif coord_to_move[i][1] > all_vs_tanks[i][0].rect.y:
+                        move_x, move_y = 0, 1
+                else:
+                    if coord_to_move[i][0] < all_vs_tanks[i][0].rect.x:
+                        move_x, move_y = -1, 0
+                    if coord_to_move[i][0] > all_vs_tanks[i][0].rect.x:
+                        move_x, move_y = 1, 0
+        if i == 0:
+            move_x_0, move_y_0 = move_x, move_y
+        elif i == 1:
+            move_x_1, move_y_1 = move_x, move_y
+        else:
+            move_x_2, move_y_2 = move_x, move_y
+
+    all_sprite.update(move_x_0, move_y_0, 3)
+    all_sprite.update(move_x_1, move_y_1, 4)
+    all_sprite.update(move_x_2, move_y_2, 5)
 
     if vs_tank_flag_shot:
         if not (our_tank[1].die or our_tank[0].die):
