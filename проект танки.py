@@ -14,12 +14,12 @@ def finish_screen():
     result = defeated_tanks * 4 - all_shots - lose * 9 - losed_hp * 3
     if result <= 0:
         intro_text = ["к сожалению, вы проиграли, но достойно сражались!",
-                      "спасибо за игру"
-                      'ваш результат: ' + result]
+                      "спасибо за игру",
+                      'ваш результат: ' + str(result)]
     else:
         intro_text = ['вы победили!',
                       'спасибо за игру!!',
-                      'ваш результат: ' + result]
+                      'ваш результат: ' + str(result)]
 
     fon = pygame.image.load('data/end_fon.jpg')
     fon1 = pygame.transform.scale(fon, (WIDTH, HEIGHT))
@@ -151,7 +151,7 @@ class AnimatedSmoke(pygame.sprite.Sprite):
     def __init__(self, columns, rows, x, y, bool, number_of_tank, flag):
         super().__init__(all_sprite)
         self.frames = []
-        self.sheet = pygame.image.load('data/animated_smoke.png')
+        self.sheet = sprites['smoke']
         self.cut_sheet(self.sheet, columns, rows)
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
@@ -183,8 +183,8 @@ class AnimatedSmoke(pygame.sprite.Sprite):
 class AnimatedFire(pygame.sprite.Sprite):
     def __init__(self, columns, rows, x, y):
         super().__init__(all_sprite)
+        self.sheet = sprites['fire']
         self.frames = []
-        self.sheet = pygame.image.load('data/animated_fire.png')
         self.cut_sheet(self.sheet, columns, rows)
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
@@ -370,9 +370,12 @@ class Our_tank_gus(pygame.sprite.Sprite):
         global losed_hp
         if pygame.sprite.spritecollide(self, all_shot, False):
             if pygame.sprite.spritecollide(self, all_shot, False)[0].whose_shot != 0:
-                pygame.sprite.spritecollide(self, all_shot, True)
+                rect = pygame.sprite.spritecollide(self, all_shot, False)[0].rect
+                x, y = rect.x, rect.y
+                AnimatedFire(5, 4, x, y)
                 self.hp -= 1
                 losed_hp += 1
+                pygame.sprite.spritecollide(self, all_shot, True)
                 if not self.hp:
                     self.die = True
                     our_tank[1].kill()
@@ -464,8 +467,8 @@ class Our_tank_gun(pygame.sprite.Sprite):
 class Shot(pygame.sprite.Sprite):
     def __init__(self, coord, target, type, bool, number):
         super().__init__(all_sprite)
-        self.image = pygame.image.load('data/пуля.jpg')
-        self.image_start_patr = pygame.image.load('data/пуля.jpg')
+        self.image = sprites['shot']
+        self.image_start_patr = self.image
         self.image = pygame.transform.scale(self.image
                                             , (15, 15))
         self.image_start_patr = pygame.transform.scale(self.image
@@ -553,6 +556,10 @@ all_our_tanks_sprite = pygame.sprite.Group()
 clock = pygame.time.Clock()
 running = True
 
+image = pygame.image.load('data/пуля.jpg')
+fire_sheet = pygame.image.load('data/animated_fire.png')
+smoke_sheet = pygame.image.load('data/animated_smoke.png')
+sprites = {"smoke": smoke_sheet, "fire":  fire_sheet, 'shot': image}
 size = 10
 y = 0
 lvl = 1
@@ -678,8 +685,6 @@ while running:
                                     random.randint(all_vs_tanks[i][0].start_pos_y - 100,
                                                    all_vs_tanks[i][0].start_pos_y + 100)]
             else:
-                print(coord_to_move[i][0], all_vs_tanks[i][0].rect.x, i)
-                print(coord_to_move[i][1], all_vs_tanks[i][0].rect.y, i)
                 if not all_vs_tanks[i][0].can_move:
                     coord_to_move[i] = [random.randint(all_vs_tanks[i][0].start_pos_x - 100,
                                                        all_vs_tanks[i][0].start_pos_x + 100),
