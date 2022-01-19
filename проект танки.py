@@ -6,12 +6,34 @@ pygame.init()
 FPS = 50
 
 
+number_of_tracks = 4
+current_track = 0
+tracks = ["C418_-_Minecraft_30921694.mp3",
+          "C418_-_Haggstrom_30921643.mp3",
+          "C418_-_Living_Mice_30921638.mp3",
+          "C418_-_Subwoofer_Lullaby_30921632.mp3"]
+random.shuffle(tracks)
+
+
+def music_player():
+    global number_of_tracks
+    global current_track
+    if pygame.mixer.music.get_busy():
+        return
+    else:
+        current_track += 1
+        if current_track >= number_of_tracks:
+            current_track = 0
+
+        pygame.mixer.music.load("music/" + tracks[current_track])
+        pygame.mixer.music.play()
+        pygame.mixer.music.set_volume(0.1)
 def finish_screen():
     with open('info.txt', 'w') as f:
         f.write('number of deaths: ' + str(lose) + "\n")
         f.write('number of destroyed tanks: ' + str(defeated_tanks) + "\n")
         f.write('total shots fired: ' + str(all_shots) + "\n")
-    result = defeated_tanks * 4 - all_shots - lose * 9 - losed_hp * 3
+    result = defeated_tanks * 4 - all_shots - lose * 9 - losed_hp
     if result <= 0:
         intro_text = ["к сожалению, вы проиграли, но достойно сражались!",
                       "спасибо за игру",
@@ -578,6 +600,7 @@ Border(WIDTH - 5, 5, WIDTH - 5, HEIGHT - 5)
 
 
 start_screen()
+music_player()
 
 flag_gun = 0
 
