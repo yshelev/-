@@ -5,21 +5,42 @@ pygame.init()
 
 FPS = 50
 
+number_of_tracks = 4
+current_track = 0
+tracks = ["C418_-_Minecraft_30921694.mp3",
+          "C418_-_Haggstrom_30921643.mp3",
+          "C418_-_Living_Mice_30921638.mp3",
+          "C418_-_Subwoofer_Lullaby_30921632.mp3"]
+random.shuffle(tracks)
 
+
+def music_player():
+    global number_of_tracks
+    global current_track
+    if pygame.mixer.music.get_busy():
+        return
+    else:
+        current_track += 1
+        if current_track >= number_of_tracks:
+            current_track = 0
+
+        pygame.mixer.music.load("music/" + tracks[current_track])
+        pygame.mixer.music.play()
+        pygame.mixer.music.set_volume(0.1)
 def finish_screen():
     with open('info.txt', 'w') as f:
         f.write('number of deaths: ' + str(lose) + "\n")
         f.write('number of destroyed tanks: ' + str(defeated_tanks) + "\n")
         f.write('total shots fired: ' + str(all_shots) + "\n")
-    result = defeated_tanks * 4 - all_shots - lose * 9 - losed_hp * 3
+    result = defeated_tanks * 4 - all_shots - lose * 9 - losed_hp
     if result <= 0:
         intro_text = ["к сожалению, вы проиграли, но достойно сражались!",
-                      "спасибо за игру"
-                      'ваш результат: ' + result]
+                      "спасибо за игру",
+                      'ваш результат: ' + str(result)]
     else:
         intro_text = ['вы победили!',
                       'спасибо за игру!!',
-                      'ваш результат: ' + result]
+                      'ваш результат: ' + str(result)]
 
     fon = pygame.image.load('data/end_fon.jpg')
     fon1 = pygame.transform.scale(fon, (WIDTH, HEIGHT))
@@ -151,7 +172,7 @@ class AnimatedSmoke(pygame.sprite.Sprite):
     def __init__(self, columns, rows, x, y, bool, number_of_tank, flag):
         super().__init__(all_sprite)
         self.frames = []
-        self.sheet = pygame.image.load('data/animated_smoke.png')
+        self.sheet = sprites['smoke']
         self.cut_sheet(self.sheet, columns, rows)
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
@@ -183,8 +204,8 @@ class AnimatedSmoke(pygame.sprite.Sprite):
 class AnimatedFire(pygame.sprite.Sprite):
     def __init__(self, columns, rows, x, y):
         super().__init__(all_sprite)
+        self.sheet = sprites['fire']
         self.frames = []
-        self.sheet = pygame.image.load('data/animated_fire.png')
         self.cut_sheet(self.sheet, columns, rows)
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
@@ -370,9 +391,12 @@ class Our_tank_gus(pygame.sprite.Sprite):
         global losed_hp
         if pygame.sprite.spritecollide(self, all_shot, False):
             if pygame.sprite.spritecollide(self, all_shot, False)[0].whose_shot != 0:
-                pygame.sprite.spritecollide(self, all_shot, True)
+                rect = pygame.sprite.spritecollide(self, all_shot, False)[0].rect
+                x, y = rect.x, rect.y
+                AnimatedFire(5, 4, x, y)
                 self.hp -= 1
                 losed_hp += 1
+                pygame.sprite.spritecollide(self, all_shot, True)
                 if not self.hp:
                     self.die = True
                     our_tank[1].kill()
@@ -464,8 +488,8 @@ class Our_tank_gun(pygame.sprite.Sprite):
 class Shot(pygame.sprite.Sprite):
     def __init__(self, coord, target, type, bool, number):
         super().__init__(all_sprite)
-        self.image = pygame.image.load('data/пуля.jpg')
-        self.image_start_patr = pygame.image.load('data/пуля.jpg')
+        self.image = sprites['shot']
+        self.image_start_patr = self.image
         self.image = pygame.transform.scale(self.image
                                             , (15, 15))
         self.image_start_patr = pygame.transform.scale(self.image
@@ -553,6 +577,14 @@ all_our_tanks_sprite = pygame.sprite.Group()
 clock = pygame.time.Clock()
 running = True
 
+image = pygame.image.load('data/пуля.jpg')
+fire_sheet = pygame.image.load('data/animated_fire.png')
+smoke_sheet = pygame.image.load('data/animated_smoke.png')
+sprites = {"smoke": smoke_sheet, "fire":  fire_sheet, 'shot': image}
+
+dirt = pygame.image.load('data/dirt.jpg')
+dirt = pygame.transform.scale(dirt, (WIDTH - 10, HEIGHT - 10))
+
 size = 10
 y = 0
 lvl = 1
@@ -571,6 +603,7 @@ Border(WIDTH - 5, 5, WIDTH - 5, HEIGHT - 5)
 
 
 start_screen()
+music_player()
 
 flag_gun = 0
 
@@ -678,8 +711,6 @@ while running:
                                     random.randint(all_vs_tanks[i][0].start_pos_y - 100,
                                                    all_vs_tanks[i][0].start_pos_y + 100)]
             else:
-                print(coord_to_move[i][0], all_vs_tanks[i][0].rect.x, i)
-                print(coord_to_move[i][1], all_vs_tanks[i][0].rect.y, i)
                 if not all_vs_tanks[i][0].can_move:
                     coord_to_move[i] = [random.randint(all_vs_tanks[i][0].start_pos_x - 100,
                                                        all_vs_tanks[i][0].start_pos_x + 100),
@@ -706,53 +737,57 @@ while running:
     all_sprite.update(move_x_1, move_y_1, 4)
     all_sprite.update(move_x_2, move_y_2, 5)
 
-    if not (our_tank[1].die or our_tank[0].die):
-        if not (all_vs_tanks[0][0].die or all_vs_tanks[0][1].die) and vs_tank_count_shot == 10:
-            if all_vs_tanks[0][1].weapon_type == 2:
-                shotgun_shot_0 = Shot([all_vs_tanks[0][0].rect.x + 25,all_vs_tanks[0][0].rect.y + 25],
-                                      [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25], 2, 2, 0)
-                shotgun_shot_1 = Shot([all_vs_tanks[0][0].rect.x + 25, all_vs_tanks[0][0].rect.y + 25],
-                                      [our_tank[0].rect.x + 75, our_tank[0].rect.y + 75], 2, 2, 0)
-                shotgun_shot_2 = Shot([all_vs_tanks[0][0].rect.x + 25, all_vs_tanks[0][0].rect.y + 25],
-                                      [our_tank[0].rect.x - 25, our_tank[0].rect.y - 25], 2, 2, 0)
-            else:
-                shot = Shot([all_vs_tanks[0][0].rect.x + 25, all_vs_tanks[0][0].rect.y + 25],
-                            [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25],
-                            all_vs_tanks[0][1].weapon_type, 2, 0)
+    if vs_tank_flag_shot:
+        if not (our_tank[1].die or our_tank[0].die):
+            if not (all_vs_tanks[0][0].die or all_vs_tanks[0][1].die):
+                if all_vs_tanks[0][1].weapon_type == 2:
+                    shotgun_shot_0 = Shot([all_vs_tanks[0][0].rect.x + 25,all_vs_tanks[0][0].rect.y + 25],
+                                          [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25], 2, 2, 0)
+                    shotgun_shot_1 = Shot([all_vs_tanks[0][0].rect.x + 25, all_vs_tanks[0][0].rect.y + 25],
+                                          [our_tank[0].rect.x + 75, our_tank[0].rect.y + 75], 2, 2, 0)
+                    shotgun_shot_2 = Shot([all_vs_tanks[0][0].rect.x + 25, all_vs_tanks[0][0].rect.y + 25],
+                                          [our_tank[0].rect.x - 25, our_tank[0].rect.y - 25], 2, 2, 0)
+                else:
+                    shot = Shot([all_vs_tanks[0][0].rect.x + 25, all_vs_tanks[0][0].rect.y + 25],
+                                [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25],
+                                all_vs_tanks[0][1].weapon_type, 2, 0)
 
-        if not (all_vs_tanks[1][0].die or all_vs_tanks[1][1].die) and vs_tank_count_shot == 20:
-            if all_vs_tanks[1][1].weapon_type == 2:
-                shotgun_shot_0 = Shot([all_vs_tanks[1][0].rect.x + 25,all_vs_tanks[1][0].rect.y + 25],
-                                      [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25],
-                                      2, 2, 1)
-                shotgun_shot_1 = Shot([all_vs_tanks[1][0].rect.x + 25, all_vs_tanks[1][0].rect.y + 25],
-                                      [our_tank[0].rect.x + 75, our_tank[0].rect.y + 75],
-                                      all_vs_tanks[0][1].weapon_type, 2, 1)
-                shotgun_shot_2 = Shot([all_vs_tanks[1][0].rect.x + 25, all_vs_tanks[1][0].rect.y + 25],
-                                      [our_tank[0].rect.x - 25, our_tank[0].rect.y - 25],
-                                      all_vs_tanks[0][1].weapon_type, 2, 1)
-            else:
-                shot = Shot([all_vs_tanks[1][0].rect.x + 25, all_vs_tanks[1][0].rect.y + 25],
-                            [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25],
-                            all_vs_tanks[1][1].weapon_type, 2, 1)
+            if not (all_vs_tanks[1][0].die or all_vs_tanks[1][1].die):
+                if all_vs_tanks[1][1].weapon_type == 2:
+                    shotgun_shot_0 = Shot([all_vs_tanks[1][0].rect.x + 25,all_vs_tanks[1][0].rect.y + 25],
+                                          [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25],
+                                          2, 2, 1)
+                    shotgun_shot_1 = Shot([all_vs_tanks[1][0].rect.x + 25, all_vs_tanks[1][0].rect.y + 25],
+                                          [our_tank[0].rect.x + 75, our_tank[0].rect.y + 75],
+                                          all_vs_tanks[0][1].weapon_type, 2, 1)
+                    shotgun_shot_2 = Shot([all_vs_tanks[1][0].rect.x + 25, all_vs_tanks[1][0].rect.y + 25],
+                                          [our_tank[0].rect.x - 25, our_tank[0].rect.y - 25],
+                                          all_vs_tanks[0][1].weapon_type, 2, 1)
+                else:
+                    shot = Shot([all_vs_tanks[1][0].rect.x + 25, all_vs_tanks[1][0].rect.y + 25],
+                                [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25],
+                                all_vs_tanks[1][1].weapon_type, 2, 1)
 
-        if not (all_vs_tanks[2][0].die or all_vs_tanks[2][1].die) and vs_tank_count_shot == 30:
-            if all_vs_tanks[2][1].weapon_type == 2:
-                shotgun_shot_0 = Shot([all_vs_tanks[2][0].rect.x + 25, all_vs_tanks[2][0].rect.y + 25],
-                                      [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25], 2, 2, 2)
-                shotgun_shot_1 = Shot([all_vs_tanks[2][0].rect.x + 25, all_vs_tanks[2][0].rect.y + 25],
-                                      [our_tank[0].rect.x + 75, our_tank[0].rect.y + 75], 2, 2, 2)
-                shotgun_shot_2 = Shot([all_vs_tanks[2][0].rect.x + 25, all_vs_tanks[2][0].rect.y + 25],
-                                      [our_tank[0].rect.x - 25, our_tank[0].rect.y - 25], 2, 2, 2)
-            else:
-                shot = Shot([all_vs_tanks[2][0].rect.x + 25, all_vs_tanks[2][0].rect.y + 25],
-                            [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25],
-                            all_vs_tanks[2][1].weapon_type, 2, 2)
+            if not (all_vs_tanks[2][0].die or all_vs_tanks[2][1].die):
+                if all_vs_tanks[2][1].weapon_type == 2:
+                    shotgun_shot_0 = Shot([all_vs_tanks[2][0].rect.x + 25, all_vs_tanks[2][0].rect.y + 25],
+                                          [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25], 2, 2, 2)
+                    shotgun_shot_1 = Shot([all_vs_tanks[2][0].rect.x + 25, all_vs_tanks[2][0].rect.y + 25],
+                                          [our_tank[0].rect.x + 75, our_tank[0].rect.y + 75], 2, 2, 2)
+                    shotgun_shot_2 = Shot([all_vs_tanks[2][0].rect.x + 25, all_vs_tanks[2][0].rect.y + 25],
+                                          [our_tank[0].rect.x - 25, our_tank[0].rect.y - 25], 2, 2, 2)
+                else:
+                    shot = Shot([all_vs_tanks[2][0].rect.x + 25, all_vs_tanks[2][0].rect.y + 25],
+                                [our_tank[0].rect.x + 25, our_tank[0].rect.y + 25],
+                                all_vs_tanks[2][1].weapon_type, 2, 2)
+            vs_tank_flag_shot = False
 
-    if vs_tank_count_shot == 40:
-        vs_tank_count_shot = 0
-    else:
-        vs_tank_count_shot += 1
+    if not vs_tank_flag_shot:
+        if vs_tank_count_shot == 40:
+            vs_tank_flag_shot = True
+            vs_tank_count_shot = 0
+        else:
+            vs_tank_count_shot += 1
     if not all_vs_tanks_sprites:
         if all_sprite:
             for i in all_sprite:
@@ -784,6 +819,7 @@ while running:
     all_sprite.update(1, 0, 1)
     all_sprite.update(our_tank[0].rect.x, our_tank[0].rect.y, 6)
     screen.fill((255, 255, 255))
+    screen.blit(dirt, (5, 5))
     draw_location(lvl)
     Border(5, 5, WIDTH - 5, 5)
     Border(5, HEIGHT - 5, WIDTH - 5, HEIGHT - 5)
