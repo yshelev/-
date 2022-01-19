@@ -5,7 +5,6 @@ pygame.init()
 
 FPS = 50
 
-
 number_of_tracks = 4
 current_track = 0
 tracks = ["C418_-_Minecraft_30921694.mp3",
@@ -582,6 +581,7 @@ image = pygame.image.load('data/пуля.jpg')
 fire_sheet = pygame.image.load('data/animated_fire.png')
 smoke_sheet = pygame.image.load('data/animated_smoke.png')
 sprites = {"smoke": smoke_sheet, "fire":  fire_sheet, 'shot': image}
+
 size = 10
 y = 0
 lvl = 1
@@ -816,6 +816,7 @@ while running:
     all_sprite.update(1, 0, 1)
     all_sprite.update(our_tank[0].rect.x, our_tank[0].rect.y, 6)
     screen.fill((255, 255, 255))
+    screen.blit(dirt, (5, 5))
     draw_location(lvl)
     Border(5, 5, WIDTH - 5, 5)
     Border(5, HEIGHT - 5, WIDTH - 5, HEIGHT - 5)
