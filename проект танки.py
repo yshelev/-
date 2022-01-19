@@ -24,7 +24,7 @@ def music_player():
         if current_track >= number_of_tracks:
             current_track = 0
 
-        pygame.mixer.music.load("music/" + tracks[current_track])
+        pygame.mixer.music.load("data/" + tracks[current_track])
         pygame.mixer.music.play()
         pygame.mixer.music.set_volume(0.1)
 def finish_screen():
@@ -816,7 +816,6 @@ while running:
     all_sprite.update(1, 0, 1)
     all_sprite.update(our_tank[0].rect.x, our_tank[0].rect.y, 6)
     screen.fill((255, 255, 255))
-    screen.blit(dirt, (5, 5))
     draw_location(lvl)
     Border(5, 5, WIDTH - 5, 5)
     Border(5, HEIGHT - 5, WIDTH - 5, HEIGHT - 5)
