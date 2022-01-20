@@ -143,7 +143,8 @@ def start_screen():
     intro_text = ["ЗАСТАВКА", "",
                   "Правила игры",
                   "вы стреляете, убиваете с 1,",
-                  "в вас надо попасть трижды"]
+                  "в вас надо попасть трижды",
+                  "ваше оружие меняется на пробел"]
 
     fon = pygame.image.load('data/start_fon.jpg')
     fon1 = pygame.transform.scale(fon, (WIDTH, HEIGHT))
