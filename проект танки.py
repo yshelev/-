@@ -28,12 +28,13 @@ def music_player():
         pygame.mixer.music.play()
         pygame.mixer.music.set_volume(0.1)
 def finish_screen():
+    result = defeated_tanks * 3 - all_shots - lose * 6 - losed_hp
     with open('info.txt', 'w') as f:
         f.write('number of deaths: ' + str(lose) + "\n")
         f.write('number of destroyed tanks: ' + str(defeated_tanks) + "\n")
         f.write('total shots fired: ' + str(all_shots) + "\n")
-    result = defeated_tanks * 4 - all_shots - lose * 9 - losed_hp
-    if result <= 0:
+        f.write('result: ' + str(result))
+    if result < 0:
         intro_text = ["к сожалению, вы проиграли, но достойно сражались!",
                       "спасибо за игру",
                       'ваш результат: ' + str(result)]
@@ -62,7 +63,7 @@ def finish_screen():
                 terminate()
             elif event.type == pygame.KEYDOWN or \
                     event.type == pygame.MOUSEBUTTONDOWN:
-                terminate()
+                return  # начинаем игру
         pygame.display.flip()
         clock.tick(FPS)
 
@@ -128,14 +129,14 @@ def draw_normal_name(scr):
     font = pygame.font.Font(None, 25)
     text = font.render(f"weapon type = {normal_name[our_tank[1].weapon_type]}", True, (0, 0, 0))
     text_x = 10
-    text_y = 10
+    text_y = 775
     scr.blit(text, (text_x, text_y))
 
 def draw_hp(scr):
     font = pygame.font.Font(None, 25)
     text = font.render(f"hp = {our_tank[0].hp}", True, (0, 0, 0))
     text_x = 10
-    text_y = 35
+    text_y = 755
     scr.blit(text, (text_x, text_y))
 
 def start_screen():
@@ -165,7 +166,7 @@ def start_screen():
             elif event.type == pygame.KEYDOWN or \
                     event.type == pygame.MOUSEBUTTONDOWN:
                 return  # начинаем игру
-        pygame.display.flip()
+            pygame.display.flip()
         clock.tick(FPS)
 
 class AnimatedSmoke(pygame.sprite.Sprite):
